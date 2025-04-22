@@ -377,33 +377,7 @@ namespace gptLog.App.ViewModels
 
         private async Task ShowErrorDialog(string title, string message)
         {
-            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
-            {
-                var messageBox = new Window
-                {
-                    Title = title,
-                    Width = 400,
-                    Height = 200,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    Content = new StackPanel
-                    {
-                        Margin = new Thickness(20),
-                        Children =
-                        {
-                            new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
-                            new Button { Content = "OK", HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 20, 0, 0) }
-                        }
-                    }
-                };
-
-                var button = ((StackPanel)messageBox.Content).Children[1] as Button;
-                if (button != null)
-                {
-                    button.Click += (s, e) => messageBox.Close();
-                }
-
-                await messageBox.ShowDialog(desktop.MainWindow);
-            }
+            await ShowDialogAsync(title, message, DialogType.Ok);
         }
 
         public async Task<bool> ConfirmExitAsync()
@@ -411,67 +385,7 @@ namespace gptLog.App.ViewModels
             if (!IsUnsaved)
                 return true;
 
-            var result = false;
-
-            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
-            {
-                var tcs = new TaskCompletionSource<bool>();
-
-                var messageBox = new Window
-                {
-                    Title = "Unsaved Changes",
-                    Width = 400,
-                    Height = 200,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    Content = new StackPanel
-                    {
-                        Margin = new Thickness(20),
-                        Children =
-                        {
-                            new TextBlock { Text = "You have unsaved changes. Exit anyway?", TextWrapping = TextWrapping.Wrap },
-                            new StackPanel
-                            {
-                                Orientation = Orientation.Horizontal,
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                Margin = new Thickness(0, 20, 0, 0),
-                                Spacing = 10,
-                                Children =
-                                {
-                                    new Button { Content = "Yes" },
-                                    new Button { Content = "No" }
-                                }
-                            }
-                        }
-                    }
-                };
-
-                var buttonPanel = ((StackPanel)messageBox.Content).Children[1] as StackPanel;
-                if (buttonPanel != null)
-                {
-                    var yesButton = buttonPanel.Children[0] as Button;
-                    var noButton = buttonPanel.Children[1] as Button;
-
-                    if (yesButton != null && noButton != null)
-                    {
-                        yesButton.Click += (s, e) =>
-                        {
-                            tcs.SetResult(true);
-                            messageBox.Close();
-                        };
-
-                        noButton.Click += (s, e) =>
-                        {
-                            tcs.SetResult(false);
-                            messageBox.Close();
-                        };
-                    }
-                }
-
-                await messageBox.ShowDialog(desktop.MainWindow);
-                result = await tcs.Task;
-            }
-
-            return result;
+            return await ShowDialogAsync("Unsaved Changes", "You have unsaved changes. Exit anyway?", DialogType.YesNo);
         }
 
         public async Task OpenAsync()
@@ -544,6 +458,93 @@ namespace gptLog.App.ViewModels
             {
                 _messagesListBox.ScrollIntoView(Messages[Messages.Count - 1]);
             }
+        }
+
+        private async Task<bool> ShowDialogAsync(string title, string message, DialogType dialogType = DialogType.Ok)
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
+            {
+                var tcs = new TaskCompletionSource<bool>();
+                var result = false;
+
+                var messageBox = new Window
+                {
+                    Title = title,
+                    Width = 400,
+                    Height = 200,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Content = new StackPanel
+                    {
+                        Margin = new Thickness(20),
+                        Children =
+                        {
+                            new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap }
+                        }
+                    }
+                };
+
+                var stackPanel = (StackPanel)messageBox.Content;
+
+                // Create button panel based on dialog type
+                if (dialogType == DialogType.YesNo)
+                {
+                    var buttonPanel = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 20, 0, 0),
+                        Spacing = 10,
+                        Children =
+                        {
+                            new Button { Content = "Yes" },
+                            new Button { Content = "No" }
+                        }
+                    };
+
+                    stackPanel.Children.Add(buttonPanel);
+
+                    var yesButton = buttonPanel.Children[0] as Button;
+                    var noButton = buttonPanel.Children[1] as Button;
+
+                    if (yesButton != null && noButton != null)
+                    {
+                        yesButton.Click += (s, e) =>
+                        {
+                            tcs.SetResult(true);
+                            messageBox.Close();
+                        };
+
+                        noButton.Click += (s, e) =>
+                        {
+                            tcs.SetResult(false);
+                            messageBox.Close();
+                        };
+                    }
+                }
+                else // DialogType.Ok
+                {
+                    var button = new Button { Content = "OK", HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 20, 0, 0) };
+                    stackPanel.Children.Add(button);
+
+                    button.Click += (s, e) =>
+                    {
+                        tcs.SetResult(true);
+                        messageBox.Close();
+                    };
+                }
+
+                await messageBox.ShowDialog(desktop.MainWindow);
+                result = await tcs.Task;
+                return result;
+            }
+
+            return true; // Default to true if we can't show a dialog
+        }
+
+        public enum DialogType
+        {
+            Ok,
+            YesNo
         }
     }
 }
