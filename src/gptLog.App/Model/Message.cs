@@ -18,7 +18,7 @@ namespace gptLog.App.Model
                 var normalised = Regex.Replace(Text, @"\s+", " ");
                 return normalised.Length <= 50
                     ? normalised
-                    : normalised[..50] + "...";
+                    : normalised[..50].TrimEnd() + "...";
             }
         }
     }

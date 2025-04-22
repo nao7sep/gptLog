@@ -13,42 +13,110 @@ namespace gptLog.App.Model
     {
         private static readonly JsonSerializerOptions _options = new JsonSerializerOptions
         {
-            WriteIndented = true
+            WriteIndented = true,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping // Ensure CJK characters are stored as-is
         };
-
-        private static readonly Regex _newlineRegex = new Regex(@"\r\n?|\n");
 
         /// <summary>
         /// Saves a collection of messages to a JSON file
         /// </summary>
-        public static async Task SaveMessagesToFileAsync(IEnumerable<Message> messages, string filePath)
+        public static async Task SaveMessagesToFileAsync(IEnumerable<Message> messages, string filePath, string title = "Conversation")
         {
-            var dtos = messages.Select(message => new MessageDto
+            // Check if file exists to get existing metadata
+            ConversationDto conversationDto;
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    using var readStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    conversationDto = await JsonSerializer.DeserializeAsync<ConversationDto>(readStream)
+                        ?? new ConversationDto();
+                }
+                catch
+                {
+                    // If there's an error reading the file, create a new DTO
+                    conversationDto = new ConversationDto();
+                }
+            }
+            else
+            {
+                conversationDto = new ConversationDto();
+                conversationDto.Metadata.CreatedAt = DateTime.UtcNow;
+            }
+
+            // Update the metadata
+            conversationDto.Metadata.Title = title;
+            conversationDto.Metadata.LastModifiedAt = DateTime.UtcNow;
+
+            // Convert messages to DTOs
+            conversationDto.Messages = messages.Select(message => new MessageDto
             {
                 Role = message.Role.ToString().ToLowerInvariant(),
-                Lines = _newlineRegex.Split(message.Text).ToList()
+                Lines = SplitTextIntoLines(message.Text)
             }).ToList();
 
-            using var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-            await JsonSerializer.SerializeAsync(stream, dtos, _options);
+            // Save to file
+            using var writeStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+            await JsonSerializer.SerializeAsync(writeStream, conversationDto, _options);
         }
 
         /// <summary>
         /// Loads messages from a JSON file
         /// </summary>
-        public static async Task<List<Message>> LoadMessagesFromFileAsync(string filePath)
+        /// <returns>A tuple containing the list of messages and the conversation title</returns>
+        public static async Task<(List<Message> Messages, string Title)> LoadMessagesFromFileAsync(string filePath)
         {
             using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            var dtos = await JsonSerializer.DeserializeAsync<List<MessageDto>>(stream);
 
-            if (dtos == null)
-                return new List<Message>();
-
-            return dtos.Select(dto => new Message
+            try
             {
-                Role = Enum.Parse<Role>(dto.Role, ignoreCase: true),
-                Text = string.Join(Environment.NewLine, dto.Lines)
-            }).ToList();
+                var conversationDto = await JsonSerializer.DeserializeAsync<ConversationDto>(stream);
+
+                if (conversationDto == null || conversationDto.Messages == null)
+                    return (new List<Message>(), "Conversation");
+
+                var messages = conversationDto.Messages.Select(dto => new Message
+                {
+                    Role = Enum.Parse<Role>(dto.Role, ignoreCase: true),
+                    Text = string.Join(Environment.NewLine, dto.Lines)
+                }).ToList();
+
+                return (messages, conversationDto.Metadata.Title);
+            }
+            catch
+            {
+                // Try to load legacy format (just an array of MessageDto)
+                stream.Position = 0;
+                var legacyDtos = await JsonSerializer.DeserializeAsync<List<MessageDto>>(stream);
+
+                if (legacyDtos == null)
+                    return (new List<Message>(), "Conversation");
+
+                var messages = legacyDtos.Select(dto => new Message
+                {
+                    Role = Enum.Parse<Role>(dto.Role, ignoreCase: true),
+                    Text = string.Join(Environment.NewLine, dto.Lines)
+                }).ToList();
+
+                return (messages, "Conversation");
+            }
+        }
+
+        /// <summary>
+        /// Splits text into lines using StringReader instead of regex
+        /// </summary>
+        private static List<string> SplitTextIntoLines(string text)
+        {
+            var lines = new List<string>();
+            using (var reader = new StringReader(text))
+            {
+                string? line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    lines.Add(line);
+                }
+            }
+            return lines;
         }
     }
 }

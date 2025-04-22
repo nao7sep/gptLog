@@ -25,11 +25,25 @@
 
     <Grid RowDefinitions="Auto,Auto,*">
         <!-- Menu Bar -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10" Spacing="10">
-            <Button Content="Save" Command="{Binding SaveCommand}" />
-            <TextBlock VerticalAlignment="Center" Text="{Binding CurrentFilePath}" />
-            <TextBlock VerticalAlignment="Center" Text="*UNSAVED*" IsVisible="{Binding IsUnsaved}" />
-        </StackPanel>
+        <Grid Grid.Row="0" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                <Button Content="Save" Command="{Binding SaveCommand}" />
+                <TextBlock VerticalAlignment="Center" Text="{Binding CurrentFilePath}" />
+                <TextBlock VerticalAlignment="Center" Text="*UNSAVED*" IsVisible="{Binding IsUnsaved}" />
+            </StackPanel>
+
+            <TextBox Grid.Column="1" Text="{Binding ConversationTitle}" Watermark="Conversation Title"
+                     Margin="10,0" VerticalAlignment="Center" />
+
+            <CheckBox Grid.Column="2" Content="Stay on top" IsChecked="{Binding StayOnTop}"
+                      VerticalAlignment="Center" />
+        </Grid>
 
         <!-- Clipboard Panel -->
         <Grid Grid.Row="1" RowDefinitions="*,Auto" Margin="10">

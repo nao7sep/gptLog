@@ -20,6 +20,21 @@ namespace gptLog.App
 
             Closing += MainWindow_Closing;
             AddHandler(Button.ClickEvent, OnButtonClick);
+
+            // Set up property change notification for StayOnTop
+            if (DataContext is MainWindowViewModel vm)
+            {
+                vm.PropertyChanged += (sender, e) =>
+                {
+                    if (e.PropertyName == nameof(MainWindowViewModel.StayOnTop))
+                    {
+                        Topmost = vm.StayOnTop;
+                    }
+                };
+
+                // Initialize Topmost property
+                Topmost = vm.StayOnTop;
+            }
         }
 
         private void OnButtonClick(object? sender, RoutedEventArgs e)

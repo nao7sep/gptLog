@@ -22,8 +22,10 @@ namespace gptLog.App.ViewModels
         private readonly DispatcherTimer _clipboardTimer;
         private string _clipboardText = string.Empty;
         private string _currentFilePath = string.Empty;
+        private string _conversationTitle = "Conversation";
         private bool _isUnsaved;
         private bool _clearClipboardAfterPaste = true;
+        private bool _stayOnTop = true;
         private Message? _selectedMessage;
         private int _selectedIndex = -1;
 
@@ -64,6 +66,18 @@ namespace gptLog.App.ViewModels
             set => SetProperty(ref _currentFilePath, value);
         }
 
+        public string ConversationTitle
+        {
+            get => _conversationTitle;
+            set
+            {
+                if (SetProperty(ref _conversationTitle, value))
+                {
+                    IsUnsaved = true;
+                }
+            }
+        }
+
         public bool IsUnsaved
         {
             get => _isUnsaved;
@@ -74,6 +88,12 @@ namespace gptLog.App.ViewModels
         {
             get => _clearClipboardAfterPaste;
             set => SetProperty(ref _clearClipboardAfterPaste, value);
+        }
+
+        public bool StayOnTop
+        {
+            get => _stayOnTop;
+            set => SetProperty(ref _stayOnTop, value);
         }
 
         public Message? SelectedMessage
@@ -267,21 +287,30 @@ namespace gptLog.App.ViewModels
         {
             if (string.IsNullOrEmpty(CurrentFilePath))
             {
-                // Show save file dialog
+                // Show save file dialog using the newer API
                 var result = string.Empty;
                 if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
                 {
-                    var dialog = new SaveFileDialog
+                    var storageProvider = desktop.MainWindow.StorageProvider;
+                    var fileTypes = new FilePickerFileType("JSON Files")
                     {
-                        Title = "Save gptLog File",
-                        Filters = new List<FileDialogFilter>
-                        {
-                            new FileDialogFilter { Name = "JSON Files", Extensions = new List<string> { "json" } }
-                        },
-                        DefaultExtension = "json"
+                        Patterns = new[] { "*.json" },
+                        MimeTypes = new[] { "application/json" }
                     };
 
-                    result = await dialog.ShowAsync(desktop.MainWindow);
+                    var options = new FilePickerSaveOptions
+                    {
+                        Title = "Save gptLog File",
+                        FileTypeChoices = new[] { fileTypes },
+                        DefaultExtension = "json",
+                        SuggestedFileName = "conversation.json"
+                    };
+
+                    var file = await storageProvider.SaveFilePickerAsync(options);
+                    if (file != null)
+                    {
+                        result = file.Path.LocalPath;
+                    }
                 }
 
                 if (string.IsNullOrEmpty(result))
@@ -292,7 +321,8 @@ namespace gptLog.App.ViewModels
 
             try
             {
-                await JsonHelper.SaveMessagesToFileAsync(Messages, CurrentFilePath);
+                // Pass the conversation title to the save method
+                await JsonHelper.SaveMessagesToFileAsync(Messages, CurrentFilePath, ConversationTitle);
                 IsUnsaved = false;
             }
             catch (Exception ex)
@@ -305,12 +335,16 @@ namespace gptLog.App.ViewModels
         {
             try
             {
-                var messages = await JsonHelper.LoadMessagesFromFileAsync(filePath);
+                var (messages, title) = await JsonHelper.LoadMessagesFromFileAsync(filePath);
                 Messages.Clear();
                 foreach (var message in messages)
                 {
                     Messages.Add(message);
                 }
+
+                // Set the conversation title from metadata
+                ConversationTitle = title;
+
                 CurrentFilePath = filePath;
                 IsUnsaved = false;
             }
