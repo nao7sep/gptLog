@@ -1,10 +1,13 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using gptLog.App.Model;
 using gptLog.App.ViewModels;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gptLog.App
@@ -21,6 +24,10 @@ namespace gptLog.App
             Closing += MainWindow_Closing;
             AddHandler(Button.ClickEvent, OnButtonClick);
 
+            // Set up drag and drop for file opening
+            AddHandler(DragDrop.DragOverEvent, DragOver);
+            AddHandler(DragDrop.DropEvent, Drop);
+
             // Set up property change notification for StayOnTop
             if (DataContext is MainWindowViewModel vm)
             {
@@ -34,6 +41,16 @@ namespace gptLog.App
 
                 // Initialize Topmost property
                 Topmost = vm.StayOnTop;
+
+                // Set the MessagesListBox property in the ViewModel
+                this.AttachedToVisualTree += (s, e) =>
+                {
+                    var listBox = this.FindControl<ListBox>("MessagesList");
+                    if (listBox != null)
+                    {
+                        vm.MessagesListBox = listBox;
+                    }
+                };
             }
         }
 
@@ -74,6 +91,56 @@ namespace gptLog.App
                     }
                 }
             }
+        }
+
+        private void DragOver(object? sender, DragEventArgs e)
+        {
+            // Only accept drag if we don't have an open file
+            if (ViewModel != null && !ViewModel.HasOpenFile)
+            {
+                // Only accept files
+                if (e.Data.Contains(DataFormats.FileNames))
+                {
+                    e.DragEffects = DragDropEffects.Copy;
+                }
+                else
+                {
+                    e.DragEffects = DragDropEffects.None;
+                }
+            }
+            else
+            {
+                e.DragEffects = DragDropEffects.None;
+            }
+
+            e.Handled = true;
+        }
+
+        private async void Drop(object? sender, DragEventArgs e)
+        {
+            // Only accept drop if we don't have an open file
+            if (ViewModel != null && !ViewModel.HasOpenFile)
+            {
+                if (e.Data.Contains(DataFormats.FileNames))
+                {
+                    // Use GetFileNames for now (even though it's deprecated)
+                    var files = e.Data.GetFileNames();
+                    if (files != null)
+                    {
+                        var filesList = files.ToList();
+                        if (filesList.Count > 0)
+                        {
+                            var filePath = filesList[0];
+                            if (filePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                            {
+                                await ViewModel.LoadAsync(filePath);
+                            }
+                        }
+                    }
+                }
+            }
+
+            e.Handled = true;
         }
 
         private async void MainWindow_Closing(object? sender, WindowClosingEventArgs e)

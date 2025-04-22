@@ -24,7 +24,9 @@ namespace gptLog.App.Model
         {
             // Check if file exists to get existing metadata
             ConversationDto conversationDto;
-            if (File.Exists(filePath))
+            bool isNewFile = !File.Exists(filePath);
+
+            if (!isNewFile)
             {
                 try
                 {
@@ -36,17 +38,25 @@ namespace gptLog.App.Model
                 {
                     // If there's an error reading the file, create a new DTO
                     conversationDto = new ConversationDto();
+                    isNewFile = true;
                 }
             }
             else
             {
                 conversationDto = new ConversationDto();
-                conversationDto.Metadata.CreatedAt = DateTime.UtcNow;
             }
 
             // Update the metadata
             conversationDto.Metadata.Title = title;
+
+            // Always update LastModifiedAt when saving
             conversationDto.Metadata.LastModifiedAt = DateTime.UtcNow;
+
+            // Set CreatedAt only for new files
+            if (isNewFile)
+            {
+                conversationDto.Metadata.CreatedAt = DateTime.UtcNow;
+            }
 
             // Convert messages to DTOs
             conversationDto.Messages = messages.Select(message => new MessageDto

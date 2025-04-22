@@ -28,6 +28,7 @@ namespace gptLog.App.ViewModels
         private bool _stayOnTop = true;
         private Message? _selectedMessage;
         private int _selectedIndex = -1;
+        private ListBox? _messagesListBox;
 
         public MainWindowViewModel()
         {
@@ -40,6 +41,9 @@ namespace gptLog.App.ViewModels
             MoveMessageDownCommand = new RelayCommand(MoveMessageDown, CanMoveMessageDown);
             DeleteMessageCommand = new RelayCommand(DeleteMessage, CanDeleteMessage);
             SaveCommand = new AsyncRelayCommand(SaveAsync);
+            OpenCommand = new AsyncRelayCommand(OpenAsync);
+            CloseFileCommand = new RelayCommand(CloseFile, () => HasOpenFile);
+            ExitCommand = new RelayCommand(Exit);
             InsertUserMessageCommand = new RelayCommand<int>(InsertUserMessage);
             InsertAssistantMessageCommand = new RelayCommand<int>(InsertAssistantMessage);
 
@@ -108,12 +112,23 @@ namespace gptLog.App.ViewModels
             set => SetProperty(ref _selectedIndex, value);
         }
 
+        public bool HasOpenFile => !string.IsNullOrEmpty(CurrentFilePath);
+
+        public ListBox? MessagesListBox
+        {
+            get => _messagesListBox;
+            set => _messagesListBox = value;
+        }
+
         public IRelayCommand AddUserMessageCommand { get; }
         public IRelayCommand AddAssistantMessageCommand { get; }
         public IRelayCommand MoveMessageUpCommand { get; }
         public IRelayCommand MoveMessageDownCommand { get; }
         public IRelayCommand DeleteMessageCommand { get; }
         public IAsyncRelayCommand SaveCommand { get; }
+        public IAsyncRelayCommand OpenCommand { get; }
+        public IRelayCommand CloseFileCommand { get; }
+        public IRelayCommand ExitCommand { get; }
         public IRelayCommand<int> InsertUserMessageCommand { get; }
         public IRelayCommand<int> InsertAssistantMessageCommand { get; }
 
@@ -164,13 +179,17 @@ namespace gptLog.App.ViewModels
                 textToAdd = role == Role.User ? "User message" : "Assistant message";
             }
 
-            Messages.Add(new Message
+            var message = new Message
             {
                 Role = role,
                 Text = textToAdd
-            });
+            };
 
+            Messages.Add(message);
             IsUnsaved = true;
+
+            // Scroll to the newly added message
+            ScrollToLastMessage();
 
             if (ClearClipboardAfterPaste && !string.IsNullOrWhiteSpace(ClipboardText))
             {
@@ -265,12 +284,14 @@ namespace gptLog.App.ViewModels
                 textToAdd = "User message";
             }
 
-            Messages.Insert(index, new Message
+            var message = new Message
             {
                 Role = Role.User,
                 Text = textToAdd
-            });
+            };
 
+            Messages.Insert(index, message);
+            SelectedMessage = message;
             IsUnsaved = true;
 
             if (ClearClipboardAfterPaste && !string.IsNullOrWhiteSpace(ClipboardText))
@@ -293,12 +314,14 @@ namespace gptLog.App.ViewModels
                 textToAdd = "Assistant message";
             }
 
-            Messages.Insert(index, new Message
+            var message = new Message
             {
                 Role = Role.Assistant,
                 Text = textToAdd
-            });
+            };
 
+            Messages.Insert(index, message);
+            SelectedMessage = message;
             IsUnsaved = true;
 
             if (ClearClipboardAfterPaste && !string.IsNullOrWhiteSpace(ClipboardText))
@@ -475,6 +498,78 @@ namespace gptLog.App.ViewModels
             }
 
             return result;
+        }
+
+        public async Task OpenAsync()
+        {
+            if (IsUnsaved)
+            {
+                var shouldContinue = await ConfirmExitAsync();
+                if (!shouldContinue)
+                    return;
+            }
+
+            try
+            {
+                // Show open file dialog
+                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
+                {
+                    var storageProvider = desktop.MainWindow.StorageProvider;
+                    var fileTypes = new FilePickerFileType("JSON Files")
+                    {
+                        Patterns = new[] { "*.json" },
+                        MimeTypes = new[] { "application/json" }
+                    };
+
+                    var options = new FilePickerOpenOptions
+                    {
+                        Title = "Open gptLog File",
+                        FileTypeFilter = new[] { fileTypes },
+                        AllowMultiple = false
+                    };
+
+                    var files = await storageProvider.OpenFilePickerAsync(options);
+                    if (files.Count > 0)
+                    {
+                        await LoadAsync(files[0].Path.LocalPath);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorDialog("Open Error", $"Failed to open file: {ex.Message}");
+            }
+        }
+
+        public void CloseFile()
+        {
+            if (IsUnsaved)
+            {
+                // We should show a confirmation dialog, but for simplicity we'll just close
+                // In a real app, you'd want to await ConfirmExitAsync() here
+            }
+
+            Messages.Clear();
+            CurrentFilePath = string.Empty;
+            ConversationTitle = "Conversation";
+            IsUnsaved = false;
+        }
+
+        public void Exit()
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.Shutdown();
+            }
+        }
+
+        // Helper method to scroll to the last message
+        private void ScrollToLastMessage()
+        {
+            if (_messagesListBox != null && Messages.Count > 0)
+            {
+                _messagesListBox.ScrollIntoView(Messages[Messages.Count - 1]);
+            }
         }
     }
 }

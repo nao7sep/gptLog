@@ -23,30 +23,57 @@
         <KeyBinding Gesture="Delete" Command="{Binding DeleteMessageCommand}" />
     </Window.KeyBindings>
 
-    <Grid RowDefinitions="Auto,Auto,*">
-        <!-- Menu Bar -->
-        <Grid Grid.Row="0" Margin="10">
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+        <!-- Top Menu Bar -->
+        <Grid Grid.Row="0" Margin="5">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
-                <Button Content="Save" Command="{Binding SaveCommand}" />
-                <TextBlock VerticalAlignment="Center" Text="{Binding CurrentFilePath}" />
-                <TextBlock VerticalAlignment="Center" Text="*UNSAVED*" IsVisible="{Binding IsUnsaved}" />
-            </StackPanel>
+            <TextBox Grid.Column="0" Text="{Binding ConversationTitle}" Watermark="Conversation Title"
+                     VerticalAlignment="Center" />
 
-            <TextBox Grid.Column="1" Text="{Binding ConversationTitle}" Watermark="Conversation Title"
-                     Margin="10,0" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Content="Open" Command="{Binding OpenCommand}"
+                    Margin="5,0,0,0" IsVisible="{Binding !HasOpenFile}" />
 
-            <CheckBox Grid.Column="2" Content="Stay on top" IsChecked="{Binding StayOnTop}"
-                      VerticalAlignment="Center" />
+            <Button Grid.Column="2" Content="Close File" Command="{Binding CloseFileCommand}"
+                    Margin="5,0,0,0" IsVisible="{Binding HasOpenFile}" />
+
+            <Button Grid.Column="3" Content="Exit" Command="{Binding ExitCommand}"
+                    Margin="5,0,0,0" />
         </Grid>
 
+        <!-- Messages List - Moved before clipboard panel -->
+        <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="1" Margin="5">
+            <ListBox ItemsSource="{Binding Messages}"
+                     SelectedItem="{Binding SelectedMessage}"
+                     SelectedIndex="{Binding SelectedIndex}"
+                     Name="MessagesList">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="model:Message">
+                        <Border BorderThickness="2" CornerRadius="4" Padding="4" Margin="2"
+                                BorderBrush="{Binding Role, Converter={StaticResource RoleToBrushConverter}}">
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto">
+                                <TextBlock Grid.Column="0" Text="{Binding PreviewText}" VerticalAlignment="Center" />
+
+                                <!-- Buttons with shorter labels -->
+                                <Button Grid.Column="1" Content="↑" Margin="2,0" Width="30" />
+                                <Button Grid.Column="2" Content="↓" Margin="2,0" Width="30" />
+                                <Button Grid.Column="3" Content="+U" Margin="2,0" Width="30" />
+                                <Button Grid.Column="4" Content="+A" Margin="2,0" Width="30" />
+                                <Button Grid.Column="5" Content="×" Margin="2,0" Width="30" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+
         <!-- Clipboard Panel -->
-        <Grid Grid.Row="1" RowDefinitions="*,Auto" Margin="10">
+        <Grid Grid.Row="2" RowDefinitions="*,Auto" Margin="5">
             <TextBox Grid.Row="0" Text="{Binding ClipboardText}" IsReadOnly="True"
                      AcceptsReturn="True" TextWrapping="Wrap" Height="100" />
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,0" Spacing="10">
@@ -56,32 +83,21 @@
                         ToolTip.Tip="Add as Assistant message" Width="120" />
                 <CheckBox Content="Clear clipboard after paste"
                           IsChecked="{Binding ClearClipboardAfterPaste}" />
+                <CheckBox Content="Stay on top" IsChecked="{Binding StayOnTop}" />
             </StackPanel>
         </Grid>
 
-        <!-- Messages List -->
-        <ListBox Grid.Row="2" ItemsSource="{Binding Messages}"
-                 SelectedItem="{Binding SelectedMessage}"
-                 SelectedIndex="{Binding SelectedIndex}"
-                 Margin="10"
-                 Name="MessagesList">
-            <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="model:Message">
-                    <Border BorderThickness="2" CornerRadius="4" Padding="6" Margin="4"
-                            BorderBrush="{Binding Role, Converter={StaticResource RoleToBrushConverter}}">
-                        <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto">
-                            <TextBlock Grid.Column="0" Text="{Binding PreviewText}" VerticalAlignment="Center" />
+        <!-- Status Bar -->
+        <Grid Grid.Row="3" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-                            <!-- Buttons with correct command bindings -->
-                            <Button Grid.Column="1" Content="Move Up" Margin="2,0" />
-                            <Button Grid.Column="2" Content="Move Down" Margin="2,0" />
-                            <Button Grid.Column="3" Content="Add User" Margin="2,0" />
-                            <Button Grid.Column="4" Content="Add Assistant" Margin="2,0" />
-                            <Button Grid.Column="5" Content="Delete" Margin="2,0" />
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+            <Button Grid.Column="0" Content="Save" Command="{Binding SaveCommand}" />
+            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding CurrentFilePath}" Margin="5,0" />
+            <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="*UNSAVED*" IsVisible="{Binding IsUnsaved}" />
+        </Grid>
     </Grid>
 </Window>
