@@ -50,10 +50,10 @@
             <TextBox Grid.Row="0" Text="{Binding ClipboardText}" IsReadOnly="True"
                      AcceptsReturn="True" TextWrapping="Wrap" Height="100" />
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,0" Spacing="10">
-                <Button Content="+U" Command="{Binding AddUserMessageCommand}"
-                        ToolTip.Tip="Add as User message" Width="40" />
-                <Button Content="+A" Command="{Binding AddAssistantMessageCommand}"
-                        ToolTip.Tip="Add as Assistant message" Width="40" />
+                <Button Content="Add as User" Command="{Binding AddUserMessageCommand}"
+                        ToolTip.Tip="Add as User message" Width="100" />
+                <Button Content="Add as Assistant" Command="{Binding AddAssistantMessageCommand}"
+                        ToolTip.Tip="Add as Assistant message" Width="120" />
                 <CheckBox Content="Clear clipboard after paste"
                           IsChecked="{Binding ClearClipboardAfterPaste}" />
             </StackPanel>
@@ -72,12 +72,12 @@
                         <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto">
                             <TextBlock Grid.Column="0" Text="{Binding PreviewText}" VerticalAlignment="Center" />
 
-                            <!-- We'll use simple buttons without commands for now -->
-                            <Button Grid.Column="1" Content="↑" Margin="2,0" />
-                            <Button Grid.Column="2" Content="↓" Margin="2,0" />
-                            <Button Grid.Column="3" Content="✚U" Margin="2,0" />
-                            <Button Grid.Column="4" Content="✚A" Margin="2,0" />
-                            <Button Grid.Column="5" Content="🗑" Margin="2,0" />
+                            <!-- Buttons with correct command bindings -->
+                            <Button Grid.Column="1" Content="Move Up" Margin="2,0" />
+                            <Button Grid.Column="2" Content="Move Down" Margin="2,0" />
+                            <Button Grid.Column="3" Content="Add User" Margin="2,0" />
+                            <Button Grid.Column="4" Content="Add Assistant" Margin="2,0" />
+                            <Button Grid.Column="5" Content="Delete" Margin="2,0" />
                         </Grid>
                     </Border>
                 </DataTemplate>
