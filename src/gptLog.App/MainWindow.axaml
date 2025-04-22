@@ -2,8 +2,72 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:vm="using:gptLog.App.ViewModels"
+        xmlns:model="using:gptLog.App.Model"
+        xmlns:converters="using:gptLog.App.Converters"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
         x:Class="gptLog.App.MainWindow"
-        Title="gptLog.App">
-    Welcome to Avalonia!
+        Title="gptLog"
+        Width="800" Height="600"
+        WindowStartupLocation="CenterScreen"
+        x:DataType="vm:MainWindowViewModel">
+
+    <Window.Resources>
+        <converters:RoleToBrushConverter x:Key="RoleToBrushConverter"/>
+    </Window.Resources>
+
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCommand}" />
+        <KeyBinding Gesture="Ctrl+U" Command="{Binding MoveMessageUpCommand}" />
+        <KeyBinding Gesture="Ctrl+D" Command="{Binding MoveMessageDownCommand}" />
+        <KeyBinding Gesture="Delete" Command="{Binding DeleteMessageCommand}" />
+    </Window.KeyBindings>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+        <!-- Menu Bar -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10" Spacing="10">
+            <Button Content="Save" Command="{Binding SaveCommand}" />
+            <TextBlock VerticalAlignment="Center" Text="{Binding CurrentFilePath}" />
+            <TextBlock VerticalAlignment="Center" Text="*UNSAVED*" IsVisible="{Binding IsUnsaved}" />
+        </StackPanel>
+
+        <!-- Clipboard Panel -->
+        <Grid Grid.Row="1" RowDefinitions="*,Auto" Margin="10">
+            <TextBox Grid.Row="0" Text="{Binding ClipboardText}" IsReadOnly="True"
+                     AcceptsReturn="True" TextWrapping="Wrap" Height="100" />
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,0" Spacing="10">
+                <Button Content="+U" Command="{Binding AddUserMessageCommand}"
+                        ToolTip.Tip="Add as User message" Width="40" />
+                <Button Content="+A" Command="{Binding AddAssistantMessageCommand}"
+                        ToolTip.Tip="Add as Assistant message" Width="40" />
+                <CheckBox Content="Clear clipboard after paste"
+                          IsChecked="{Binding ClearClipboardAfterPaste}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Messages List -->
+        <ListBox Grid.Row="2" ItemsSource="{Binding Messages}"
+                 SelectedItem="{Binding SelectedMessage}"
+                 SelectedIndex="{Binding SelectedIndex}"
+                 Margin="10"
+                 Name="MessagesList">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="model:Message">
+                    <Border BorderThickness="2" CornerRadius="4" Padding="6" Margin="4"
+                            BorderBrush="{Binding Role, Converter={StaticResource RoleToBrushConverter}}">
+                        <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto">
+                            <TextBlock Grid.Column="0" Text="{Binding PreviewText}" VerticalAlignment="Center" />
+
+                            <!-- We'll use simple buttons without commands for now -->
+                            <Button Grid.Column="1" Content="↑" Margin="2,0" />
+                            <Button Grid.Column="2" Content="↓" Margin="2,0" />
+                            <Button Grid.Column="3" Content="✚U" Margin="2,0" />
+                            <Button Grid.Column="4" Content="✚A" Margin="2,0" />
+                            <Button Grid.Column="5" Content="🗑" Margin="2,0" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
 </Window>
