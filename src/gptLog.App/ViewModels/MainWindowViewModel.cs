@@ -25,7 +25,7 @@ namespace gptLog.App.ViewModels
         private string _conversationTitle = "Conversation";
         private bool _isUnsaved;
         private bool _clearClipboardAfterPaste = true;
-        private bool _stayOnTop = true;
+        private bool _stayOnTop = false;
         private Message? _selectedMessage;
         private int _selectedIndex = -1;
         private ListBox? _messagesListBox;
@@ -156,7 +156,7 @@ namespace gptLog.App.ViewModels
             }
         }
 
-        private bool CanAddMessage() => true; // Always enable the buttons, even if clipboard is empty
+        private bool CanAddMessage() => !string.IsNullOrWhiteSpace(ClipboardText);
 
         private void AddUserMessage()
         {
@@ -170,19 +170,11 @@ namespace gptLog.App.ViewModels
 
         private void AddMessage(Role role)
         {
-            // Allow adding messages even if clipboard is empty
-            string textToAdd = ClipboardText;
-
-            // If clipboard is empty, add a placeholder message
-            if (string.IsNullOrWhiteSpace(textToAdd))
-            {
-                textToAdd = role == Role.User ? "User message" : "Assistant message";
-            }
-
+            // The button should be disabled if clipboard is empty, so we don't need to check
             var message = new Message
             {
                 Role = role,
-                Text = textToAdd
+                Text = ClipboardText
             };
 
             Messages.Add(message);
@@ -191,7 +183,7 @@ namespace gptLog.App.ViewModels
             // Scroll to the newly added message
             ScrollToLastMessage();
 
-            if (ClearClipboardAfterPaste && !string.IsNullOrWhiteSpace(ClipboardText))
+            if (ClearClipboardAfterPaste)
             {
                 ClearClipboard();
             }
@@ -272,29 +264,20 @@ namespace gptLog.App.ViewModels
 
         private void InsertUserMessage(int index)
         {
-            if (index < 0 || index > Messages.Count)
+            if (index < 0 || index > Messages.Count || string.IsNullOrWhiteSpace(ClipboardText))
                 return;
-
-            // Allow inserting messages even if clipboard is empty
-            string textToAdd = ClipboardText;
-
-            // If clipboard is empty, add a placeholder message
-            if (string.IsNullOrWhiteSpace(textToAdd))
-            {
-                textToAdd = "User message";
-            }
 
             var message = new Message
             {
                 Role = Role.User,
-                Text = textToAdd
+                Text = ClipboardText
             };
 
             Messages.Insert(index, message);
             SelectedMessage = message;
             IsUnsaved = true;
 
-            if (ClearClipboardAfterPaste && !string.IsNullOrWhiteSpace(ClipboardText))
+            if (ClearClipboardAfterPaste)
             {
                 ClearClipboard();
             }
@@ -302,29 +285,20 @@ namespace gptLog.App.ViewModels
 
         private void InsertAssistantMessage(int index)
         {
-            if (index < 0 || index > Messages.Count)
+            if (index < 0 || index > Messages.Count || string.IsNullOrWhiteSpace(ClipboardText))
                 return;
-
-            // Allow inserting messages even if clipboard is empty
-            string textToAdd = ClipboardText;
-
-            // If clipboard is empty, add a placeholder message
-            if (string.IsNullOrWhiteSpace(textToAdd))
-            {
-                textToAdd = "Assistant message";
-            }
 
             var message = new Message
             {
                 Role = Role.Assistant,
-                Text = textToAdd
+                Text = ClipboardText
             };
 
             Messages.Insert(index, message);
             SelectedMessage = message;
             IsUnsaved = true;
 
-            if (ClearClipboardAfterPaste && !string.IsNullOrWhiteSpace(ClipboardText))
+            if (ClearClipboardAfterPaste)
             {
                 ClearClipboard();
             }

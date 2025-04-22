@@ -143,14 +143,23 @@ namespace gptLog.App
             e.Handled = true;
         }
 
+        private bool _isExitConfirmed = false;
+
         private async void MainWindow_Closing(object? sender, WindowClosingEventArgs e)
         {
+            // If exit is already confirmed, allow the window to close
+            if (_isExitConfirmed)
+                return;
+
+            // If there are unsaved changes, show confirmation dialog
             if (ViewModel != null && ViewModel.IsUnsaved)
             {
                 e.Cancel = true;
                 var shouldExit = await ViewModel.ConfirmExitAsync();
+
                 if (shouldExit)
                 {
+                    _isExitConfirmed = true;
                     Close();
                 }
             }

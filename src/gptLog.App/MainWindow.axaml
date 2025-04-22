@@ -33,7 +33,8 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Column="0" Text="{Binding ConversationTitle}" Watermark="Conversation Title"
+            <TextBox Grid.Column="0" Text="{Binding ConversationTitle}"
+                     Watermark="Conversation Title"
                      VerticalAlignment="Center" />
 
             <Button Grid.Column="1" Content="Open" Command="{Binding OpenCommand}"
@@ -60,11 +61,11 @@
                                 <TextBlock Grid.Column="0" Text="{Binding PreviewText}" VerticalAlignment="Center" />
 
                                 <!-- Buttons with shorter labels -->
-                                <Button Grid.Column="1" Content="↑" Margin="2,0" Width="30" />
-                                <Button Grid.Column="2" Content="↓" Margin="2,0" Width="30" />
-                                <Button Grid.Column="3" Content="+U" Margin="2,0" Width="30" />
-                                <Button Grid.Column="4" Content="+A" Margin="2,0" Width="30" />
-                                <Button Grid.Column="5" Content="×" Margin="2,0" Width="30" />
+                                <Button Grid.Column="1" Content="↑" Margin="2,0" Padding="4,2" />
+                                <Button Grid.Column="2" Content="↓" Margin="2,0" Padding="4,2" />
+                                <Button Grid.Column="3" Content="+U" Margin="2,0" Padding="4,2" />
+                                <Button Grid.Column="4" Content="+A" Margin="2,0" Padding="4,2" />
+                                <Button Grid.Column="5" Content="×" Margin="2,0" Padding="4,2" />
                             </Grid>
                         </Border>
                     </DataTemplate>
@@ -96,8 +97,27 @@
             </Grid.ColumnDefinitions>
 
             <Button Grid.Column="0" Content="Save" Command="{Binding SaveCommand}" />
-            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding CurrentFilePath}" Margin="5,0" />
-            <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="*UNSAVED*" IsVisible="{Binding IsUnsaved}" />
+
+            <!-- File path with save status -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
+                <TextBlock Text="{Binding CurrentFilePath}" VerticalAlignment="Center" />
+                <TextBlock Text=" (Not saved to any file)"
+                           Foreground="Gray"
+                           VerticalAlignment="Center"
+                           IsVisible="{Binding !HasOpenFile}" />
+            </StackPanel>
+
+            <!-- Unsaved changes indicator -->
+            <Border Grid.Column="2"
+                    Background="#FFF0F0"
+                    CornerRadius="3"
+                    Padding="5,2"
+                    IsVisible="{Binding IsUnsaved}">
+                <TextBlock Text="Unsaved Changes"
+                           Foreground="#CC3300"
+                           FontWeight="Medium"
+                           VerticalAlignment="Center" />
+            </Border>
         </Grid>
     </Grid>
 </Window>
