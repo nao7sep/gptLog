@@ -22,7 +22,7 @@ namespace gptLog.App.ViewModels
         private readonly DispatcherTimer _clipboardTimer;
         private string _clipboardText = string.Empty;
         private string _currentFilePath = string.Empty;
-        private string _conversationTitle = "Conversation";
+        private string _conversationTitle = string.Empty;
         private bool _isUnsaved;
         private bool _clearClipboardAfterPaste = true;
         private bool _stayOnTop = false;
@@ -61,7 +61,18 @@ namespace gptLog.App.ViewModels
         public string ClipboardText
         {
             get => _clipboardText;
-            set => SetProperty(ref _clipboardText, value);
+            set
+            {
+                if (SetProperty(ref _clipboardText, value))
+                {
+                    // Notify that CanAddClipboardText may have changed
+                    OnPropertyChanged(nameof(CanAddClipboardText));
+
+                    // Also notify commands that they may need to reevaluate if they can execute
+                    AddUserMessageCommand.NotifyCanExecuteChanged();
+                    AddAssistantMessageCommand.NotifyCanExecuteChanged();
+                }
+            }
         }
 
         public string CurrentFilePath
@@ -113,6 +124,8 @@ namespace gptLog.App.ViewModels
         }
 
         public bool HasOpenFile => !string.IsNullOrEmpty(CurrentFilePath);
+
+        public bool CanAddClipboardText => !string.IsNullOrWhiteSpace(ClipboardText);
 
         public ListBox? MessagesListBox
         {

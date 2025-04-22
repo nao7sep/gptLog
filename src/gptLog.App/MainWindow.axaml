@@ -33,7 +33,8 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Column="0" Text="{Binding ConversationTitle}"
+            <TextBox Grid.Column="0"
+                     Text="{Binding ConversationTitle}"
                      Watermark="Conversation Title"
                      VerticalAlignment="Center" />
 
@@ -79,8 +80,10 @@
                      AcceptsReturn="True" TextWrapping="Wrap" Height="100" />
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,0" Spacing="10">
                 <Button Content="Add as User" Command="{Binding AddUserMessageCommand}"
+                        IsEnabled="{Binding CanAddClipboardText}"
                         ToolTip.Tip="Add as User message" Width="100" />
                 <Button Content="Add as Assistant" Command="{Binding AddAssistantMessageCommand}"
+                        IsEnabled="{Binding CanAddClipboardText}"
                         ToolTip.Tip="Add as Assistant message" Width="120" />
                 <CheckBox Content="Clear clipboard after paste"
                           IsChecked="{Binding ClearClipboardAfterPaste}" />
