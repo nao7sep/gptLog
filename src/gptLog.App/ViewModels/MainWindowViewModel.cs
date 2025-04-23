@@ -80,7 +80,14 @@ namespace gptLog.App.ViewModels
         public string CurrentFilePath
         {
             get => _currentFilePath;
-            set => SetProperty(ref _currentFilePath, value);
+            set
+            {
+                if (SetProperty(ref _currentFilePath, value))
+                {
+                    // Notify that HasOpenFile may have changed
+                    OnPropertyChanged(nameof(HasOpenFile));
+                }
+            }
         }
 
         public string ConversationTitle
@@ -270,12 +277,27 @@ namespace gptLog.App.ViewModels
 
         private bool CanDeleteMessage() => SelectedIndex >= 0;
 
-        private void DeleteMessage()
+        private async void DeleteMessage()
         {
             if (!CanDeleteMessage())
                 return;
 
             var index = SelectedIndex;
+            var message = Messages[index];
+
+            // Get a preview of the message (first 50 characters or less)
+            var preview = message.Text.Length > 50
+                ? message.Text.Substring(0, 50) + "..."
+                : message.Text;
+
+            // Show confirmation dialog with preview
+            var title = $"Delete {message.Role} Message";
+            var confirmMessage = $"Are you sure you want to delete this {message.Role} message?\n\nPreview:\n{preview}";
+            var shouldDelete = await ShowDialogAsync(title, confirmMessage, DialogType.YesNo);
+
+            if (!shouldDelete)
+                return;
+
             Messages.RemoveAt(index);
             IsUnsaved = true;
 
