@@ -43,7 +43,7 @@ namespace gptLog.App.ViewModels
             SaveCommand = new AsyncRelayCommand(SaveAsync);
             OpenCommand = new AsyncRelayCommand(OpenAsync);
             CloseFileCommand = new RelayCommand(CloseFile, () => HasOpenFile);
-            ExitCommand = new RelayCommand(Exit);
+            ExitCommand = new AsyncRelayCommand(ExitAsync);
             InsertUserMessageCommand = new RelayCommand<int>(InsertUserMessage);
             InsertAssistantMessageCommand = new RelayCommand<int>(InsertAssistantMessage);
 
@@ -154,7 +154,7 @@ namespace gptLog.App.ViewModels
         public IAsyncRelayCommand SaveCommand { get; }
         public IAsyncRelayCommand OpenCommand { get; }
         public IRelayCommand CloseFileCommand { get; }
-        public IRelayCommand ExitCommand { get; }
+        public IAsyncRelayCommand ExitCommand { get; }
         public IRelayCommand<int> InsertUserMessageCommand { get; }
         public IRelayCommand<int> InsertAssistantMessageCommand { get; }
 
@@ -469,8 +469,15 @@ namespace gptLog.App.ViewModels
             IsUnsaved = false;
         }
 
-        public void Exit()
+        public async Task ExitAsync()
         {
+            if (IsUnsaved)
+            {
+                var shouldExit = await ConfirmExitAsync();
+                if (!shouldExit)
+                    return;
+            }
+
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.Shutdown();
