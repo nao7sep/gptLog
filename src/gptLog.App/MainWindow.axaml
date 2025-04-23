@@ -57,7 +57,7 @@
                            VerticalAlignment="Center" />
             </Border>
 
-            <!-- File path display - Fixed visibility conditions -->
+            <!-- File path display -->
             <Grid Grid.Column="3" VerticalAlignment="Center" Margin="5,0">
                 <TextBlock Text="{Binding CurrentFilePath}"
                            IsVisible="{Binding HasOpenFile}"
