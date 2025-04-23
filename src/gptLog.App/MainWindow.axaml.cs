@@ -7,6 +7,7 @@ using Avalonia.Platform.Storage;
 using gptLog.App.Model;
 using gptLog.App.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -133,10 +134,11 @@ namespace gptLog.App
             {
                 if (e.Data.Contains(DataFormats.FileNames))
                 {
-                    // Use the non-deprecated GetDataByFormat instead of GetFileNames
-                    if (e.Data.GetDataByFormat(DataFormats.FileNames) is IEnumerable<string> files && files.Any())
+                    // Use the newer pattern to get data from drag drop
+                    var fileNames = e.Data.GetFiles()?.Select(f => f.Path.LocalPath);
+                    if (fileNames != null && fileNames.Any())
                     {
-                        var filePath = files.First();
+                        var filePath = fileNames.First();
                         if (filePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                         {
                             await ViewModel.LoadAsync(filePath);
