@@ -20,7 +20,7 @@ namespace gptLog.App.Model
         /// <summary>
         /// Saves a collection of messages to a JSON file
         /// </summary>
-        public static async Task SaveMessagesToFileAsync(IEnumerable<Message> messages, string filePath, string title = "Conversation")
+        public static async Task SaveMessagesToFileAsync(IEnumerable<Message> messages, string filePath, string title)
         {
             // Check if file exists to get existing metadata
             ConversationDto conversationDto;
@@ -76,7 +76,7 @@ namespace gptLog.App.Model
         /// Loads messages from a JSON file
         /// </summary>
         /// <returns>A tuple containing the list of messages and the conversation title</returns>
-        public static async Task<(List<Message> Messages, string Title)> LoadMessagesFromFileAsync(string filePath)
+        public static async Task<(List<Message> Messages, string? Title)> LoadMessagesFromFileAsync(string filePath)
         {
             using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
@@ -85,7 +85,7 @@ namespace gptLog.App.Model
                 var conversationDto = await JsonSerializer.DeserializeAsync<ConversationDto>(stream);
 
                 if (conversationDto == null || conversationDto.Messages == null)
-                    return (new List<Message>(), "Conversation");
+                    return (new List<Message>(), null);
 
                 var messages = conversationDto.Messages.Select(dto => new Message
                 {
@@ -93,6 +93,7 @@ namespace gptLog.App.Model
                     Text = string.Join(Environment.NewLine, dto.Lines)
                 }).ToList();
 
+                // Return the title directly, which may be null
                 return (messages, conversationDto.Metadata.Title);
             }
             catch
@@ -102,7 +103,7 @@ namespace gptLog.App.Model
                 var legacyDtos = await JsonSerializer.DeserializeAsync<List<MessageDto>>(stream);
 
                 if (legacyDtos == null)
-                    return (new List<Message>(), "Conversation");
+                    return (new List<Message>(), null);
 
                 var messages = legacyDtos.Select(dto => new Message
                 {
@@ -110,7 +111,7 @@ namespace gptLog.App.Model
                     Text = string.Join(Environment.NewLine, dto.Lines)
                 }).ToList();
 
-                return (messages, "Conversation");
+                return (messages, null);
             }
         }
 

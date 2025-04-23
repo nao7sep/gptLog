@@ -161,7 +161,6 @@ namespace gptLog.App.ViewModels
         public IRelayCommand DeleteMessageCommand { get; }
         public IAsyncRelayCommand SaveCommand { get; }
         public IAsyncRelayCommand OpenCommand { get; }
-        public IRelayCommand CloseFileCommand { get; }
         public IAsyncRelayCommand ExitCommand { get; }
         public IRelayCommand<Message> InsertUserMessageCommand { get; }
         public IRelayCommand<Message> InsertAssistantMessageCommand { get; }
@@ -420,8 +419,8 @@ namespace gptLog.App.ViewModels
                     Messages.Add(message);
                 }
 
-                // Set the conversation title from metadata
-                ConversationTitle = title;
+                // Set the conversation title from metadata, defaulting to string.Empty if null
+                ConversationTitle = title ?? string.Empty;
 
                 CurrentFilePath = filePath;
                 IsUnsaved = false;
@@ -484,20 +483,6 @@ namespace gptLog.App.ViewModels
             {
                 await ShowErrorDialog("Open Error", $"Failed to open file: {ex.Message}");
             }
-        }
-
-        public void CloseFile()
-        {
-            if (IsUnsaved)
-            {
-                // We should show a confirmation dialog, but for simplicity we'll just close
-                // In a real app, you'd want to await ConfirmExitAsync() here
-            }
-
-            Messages.Clear();
-            CurrentFilePath = string.Empty;
-            ConversationTitle = "Conversation";
-            IsUnsaved = false;
         }
 
         public async Task ExitAsync()
