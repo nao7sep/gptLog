@@ -83,38 +83,31 @@
                      SelectedIndex="{Binding SelectedIndex}"
                      Name="MessagesList">
                 <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="model:Message">
+                    <DataTemplate>
                         <Border BorderThickness="2" CornerRadius="4" Padding="4" Margin="2"
                                 BorderBrush="{Binding Role, Converter={StaticResource RoleToBrushConverter}}">
                             <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto">
                                 <TextBlock Grid.Column="0" Text="{Binding PreviewText}" VerticalAlignment="Center" />
 
-                                <!-- Buttons with command bindings -->
+                                <!-- Use Tags to identify buttons instead of commands -->
                                 <Button Grid.Column="1" Content="↑" Margin="2,0" Padding="4,2"
-                                        Command="{Binding DataContext.MoveMessageUpCommand,
-                                                  RelativeSource={RelativeSource AncestorType=Window}}"
+                                        Tag="MoveUp"
                                         ToolTip.Tip="Move message up" />
 
                                 <Button Grid.Column="2" Content="↓" Margin="2,0" Padding="4,2"
-                                        Command="{Binding DataContext.MoveMessageDownCommand,
-                                                  RelativeSource={RelativeSource AncestorType=Window}}"
+                                        Tag="MoveDown"
                                         ToolTip.Tip="Move message down" />
 
                                 <Button Grid.Column="3" Content="+U" Margin="2,0" Padding="4,2"
-                                        Command="{Binding DataContext.InsertUserMessageCommand,
-                                                  RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding $parent[ListBoxItem].GetIndex}"
+                                        Tag="InsertUser"
                                         ToolTip.Tip="Insert user message before this message" />
 
                                 <Button Grid.Column="4" Content="+A" Margin="2,0" Padding="4,2"
-                                        Command="{Binding DataContext.InsertAssistantMessageCommand,
-                                                  RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding $parent[ListBoxItem].GetIndex}"
+                                        Tag="InsertAssistant"
                                         ToolTip.Tip="Insert assistant message before this message" />
 
                                 <Button Grid.Column="5" Content="×" Margin="2,0" Padding="4,2"
-                                        Command="{Binding DataContext.DeleteMessageCommand,
-                                                  RelativeSource={RelativeSource AncestorType=Window}}"
+                                        Tag="Delete"
                                         ToolTip.Tip="Delete message" />
                             </Grid>
                         </Border>

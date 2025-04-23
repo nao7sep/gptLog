@@ -44,8 +44,10 @@ namespace gptLog.App.ViewModels
             OpenCommand = new AsyncRelayCommand(OpenAsync);
             CloseFileCommand = new RelayCommand(CloseFile, () => HasOpenFile);
             ExitCommand = new AsyncRelayCommand(ExitAsync);
-            InsertUserMessageCommand = new RelayCommand<int>(InsertUserMessage);
-            InsertAssistantMessageCommand = new RelayCommand<int>(InsertAssistantMessage);
+
+            // These commands were updated to accept Message parameters
+            InsertUserMessageCommand = new RelayCommand<Message>(InsertUserMessage);
+            InsertAssistantMessageCommand = new RelayCommand<Message>(InsertAssistantMessage);
 
             // Initialize clipboard timer
             _clipboardTimer = new DispatcherTimer
@@ -155,8 +157,8 @@ namespace gptLog.App.ViewModels
         public IAsyncRelayCommand OpenCommand { get; }
         public IRelayCommand CloseFileCommand { get; }
         public IAsyncRelayCommand ExitCommand { get; }
-        public IRelayCommand<int> InsertUserMessageCommand { get; }
-        public IRelayCommand<int> InsertAssistantMessageCommand { get; }
+        public IRelayCommand<Message> InsertUserMessageCommand { get; }
+        public IRelayCommand<Message> InsertAssistantMessageCommand { get; }
 
         private async void ClipboardTimer_Tick(object? sender, EventArgs e)
         {
@@ -288,19 +290,24 @@ namespace gptLog.App.ViewModels
             }
         }
 
-        private void InsertUserMessage(int index)
+        private void InsertUserMessage(Message? message)
         {
-            if (index < 0 || index > Messages.Count || string.IsNullOrWhiteSpace(ClipboardText))
+            if (message == null || string.IsNullOrWhiteSpace(ClipboardText))
                 return;
 
-            var message = new Message
+            var index = Messages.IndexOf(message);
+            if (index < 0)
+                return;
+
+            var newMessage = new Message
             {
                 Role = Role.User,
                 Text = ClipboardText
             };
 
-            Messages.Insert(index, message);
-            SelectedMessage = message;
+            Messages.Insert(index, newMessage);
+            SelectedIndex = index;
+            SelectedMessage = newMessage;
             IsUnsaved = true;
 
             if (ClearClipboardAfterPaste)
@@ -309,19 +316,24 @@ namespace gptLog.App.ViewModels
             }
         }
 
-        private void InsertAssistantMessage(int index)
+        private void InsertAssistantMessage(Message? message)
         {
-            if (index < 0 || index > Messages.Count || string.IsNullOrWhiteSpace(ClipboardText))
+            if (message == null || string.IsNullOrWhiteSpace(ClipboardText))
                 return;
 
-            var message = new Message
+            var index = Messages.IndexOf(message);
+            if (index < 0)
+                return;
+
+            var newMessage = new Message
             {
                 Role = Role.Assistant,
                 Text = ClipboardText
             };
 
-            Messages.Insert(index, message);
-            SelectedMessage = message;
+            Messages.Insert(index, newMessage);
+            SelectedIndex = index;
+            SelectedMessage = newMessage;
             IsUnsaved = true;
 
             if (ClearClipboardAfterPaste)

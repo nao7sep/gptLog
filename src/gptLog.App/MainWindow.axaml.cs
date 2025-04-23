@@ -61,33 +61,43 @@ namespace gptLog.App
                 // Get the message from the DataContext of the Border
                 if (border.DataContext is Message message)
                 {
-                    // Get the index of the button in the Grid
-                    var index = Grid.GetColumn(button);
-
-                    // Get the index of the message in the ListBox
-                    var listBox = this.FindControl<ListBox>("MessagesList");
-                    if (listBox != null)
+                    // Handle based on the button Tag
+                    switch (button.Tag as string)
                     {
-                        var messageIndex = listBox.Items.IndexOf(message);
+                        case "MoveUp":
+                            if (ViewModel != null)
+                            {
+                                // Select the message first
+                                ViewModel.SelectedMessage = message;
+                                ViewModel.MoveMessageUpCommand.Execute(null);
+                            }
+                            break;
 
-                        switch (index)
-                        {
-                            case 1: // Move Up button
-                                ViewModel?.MoveMessageUpCommand.Execute(null);
-                                break;
-                            case 2: // Move Down button
-                                ViewModel?.MoveMessageDownCommand.Execute(null);
-                                break;
-                            case 3: // Insert User button
-                                ViewModel?.InsertUserMessageCommand.Execute(messageIndex);
-                                break;
-                            case 4: // Insert Assistant button
-                                ViewModel?.InsertAssistantMessageCommand.Execute(messageIndex);
-                                break;
-                            case 5: // Delete button
-                                ViewModel?.DeleteMessageCommand.Execute(null);
-                                break;
-                        }
+                        case "MoveDown":
+                            if (ViewModel != null)
+                            {
+                                // Select the message first
+                                ViewModel.SelectedMessage = message;
+                                ViewModel.MoveMessageDownCommand.Execute(null);
+                            }
+                            break;
+
+                        case "InsertUser":
+                            ViewModel?.InsertUserMessageCommand.Execute(message);
+                            break;
+
+                        case "InsertAssistant":
+                            ViewModel?.InsertAssistantMessageCommand.Execute(message);
+                            break;
+
+                        case "Delete":
+                            if (ViewModel != null)
+                            {
+                                // Select the message first
+                                ViewModel.SelectedMessage = message;
+                                ViewModel.DeleteMessageCommand.Execute(null);
+                            }
+                            break;
                     }
                 }
             }
