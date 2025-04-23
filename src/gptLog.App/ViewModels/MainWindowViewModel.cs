@@ -108,7 +108,20 @@ namespace gptLog.App.ViewModels
         public bool StayOnTop
         {
             get => _stayOnTop;
-            set => SetProperty(ref _stayOnTop, value);
+            set
+            {
+                if (SetProperty(ref _stayOnTop, value))
+                {
+                    // Ensure the main window gets updated
+                    if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                    {
+                        if (desktop.MainWindow != null)
+                        {
+                            desktop.MainWindow.Topmost = value;
+                        }
+                    }
+                }
+            }
         }
 
         public Message? SelectedMessage

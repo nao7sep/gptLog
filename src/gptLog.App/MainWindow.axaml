@@ -23,33 +23,63 @@
         <KeyBinding Gesture="Delete" Command="{Binding DeleteMessageCommand}" />
     </Window.KeyBindings>
 
-    <Grid RowDefinitions="Auto,*,Auto,Auto">
-        <!-- Top Menu Bar -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <!-- Top Menu Bar - Reorganized -->
         <Grid Grid.Row="0" Margin="5">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Column="0"
-                     Text="{Binding ConversationTitle}"
-                     Watermark="Conversation Title"
-                     VerticalAlignment="Center" />
+            <!-- Open/Close Button -->
+            <Button Grid.Column="0" Content="Open" Command="{Binding OpenCommand}"
+                    Margin="0,0,5,0" IsVisible="{Binding !HasOpenFile}" />
 
-            <Button Grid.Column="1" Content="Open" Command="{Binding OpenCommand}"
-                    Margin="5,0,0,0" IsVisible="{Binding !HasOpenFile}" />
+            <Button Grid.Column="0" Content="Close File" Command="{Binding CloseFileCommand}"
+                    Margin="0,0,5,0" IsVisible="{Binding HasOpenFile}" />
 
-            <Button Grid.Column="2" Content="Close File" Command="{Binding CloseFileCommand}"
-                    Margin="5,0,0,0" IsVisible="{Binding HasOpenFile}" />
+            <!-- Save Button -->
+            <Button Grid.Column="1" Content="Save" Command="{Binding SaveCommand}"
+                    Margin="0,0,5,0" />
 
-            <Button Grid.Column="3" Content="Exit" Command="{Binding ExitCommand}"
-                    Margin="5,0,0,0" />
+            <!-- Unsaved Indicator -->
+            <Border Grid.Column="2"
+                    Background="#FFF0F0"
+                    CornerRadius="3"
+                    Padding="5,2"
+                    Margin="0,0,5,0"
+                    IsVisible="{Binding IsUnsaved}">
+                <TextBlock Text="Unsaved Changes"
+                           Foreground="#CC3300"
+                           FontWeight="Medium"
+                           VerticalAlignment="Center" />
+            </Border>
+
+            <!-- File path display -->
+            <TextBlock Grid.Column="3"
+                       Text="{Binding CurrentFilePath}"
+                       VerticalAlignment="Center"
+                       Margin="5,0" />
+
+            <TextBlock Grid.Column="3"
+                       Text=" (Not saved to any file)"
+                       Foreground="Gray"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding !HasOpenFile}" />
         </Grid>
 
-        <!-- Messages List - Moved before clipboard panel -->
-        <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="1" Margin="5">
+        <!-- Conversation Title in Second Row -->
+        <TextBox Grid.Row="1"
+                 Text="{Binding ConversationTitle}"
+                 Watermark="Conversation Title"
+                 FontSize="16"
+                 FontWeight="Medium"
+                 Margin="5"/>
+
+        <!-- Messages List -->
+        <Border Grid.Row="2" BorderBrush="LightGray" BorderThickness="1" Margin="5">
             <ListBox ItemsSource="{Binding Messages}"
                      SelectedItem="{Binding SelectedMessage}"
                      SelectedIndex="{Binding SelectedIndex}"
@@ -74,11 +104,17 @@
             </ListBox>
         </Border>
 
-        <!-- Clipboard Panel -->
-        <Grid Grid.Row="2" RowDefinitions="*,Auto" Margin="5">
-            <TextBox Grid.Row="0" Text="{Binding ClipboardText}" IsReadOnly="True"
-                     AcceptsReturn="True" TextWrapping="Wrap" Height="100" />
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,0" Spacing="10">
+        <!-- Bottom Row with Add Buttons on Left and Exit on Right -->
+        <Grid Grid.Row="3" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Side - Add Buttons -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
                 <Button Content="Add as User" Command="{Binding AddUserMessageCommand}"
                         IsEnabled="{Binding CanAddClipboardText}"
                         ToolTip.Tip="Add as User message" Width="100" />
@@ -86,41 +122,22 @@
                         IsEnabled="{Binding CanAddClipboardText}"
                         ToolTip.Tip="Add as Assistant message" Width="120" />
                 <CheckBox Content="Clear clipboard after paste"
-                          IsChecked="{Binding ClearClipboardAfterPaste}" />
-                <CheckBox Content="Stay on top" IsChecked="{Binding StayOnTop}" />
-            </StackPanel>
-        </Grid>
-
-        <!-- Status Bar -->
-        <Grid Grid.Row="3" Margin="5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <Button Grid.Column="0" Content="Save" Command="{Binding SaveCommand}" />
-
-            <!-- File path with save status -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
-                <TextBlock Text="{Binding CurrentFilePath}" VerticalAlignment="Center" />
-                <TextBlock Text=" (Not saved to any file)"
-                           Foreground="Gray"
-                           VerticalAlignment="Center"
-                           IsVisible="{Binding !HasOpenFile}" />
+                          IsChecked="{Binding ClearClipboardAfterPaste}"
+                          VerticalAlignment="Center"/>
             </StackPanel>
 
-            <!-- Unsaved changes indicator -->
-            <Border Grid.Column="2"
-                    Background="#FFF0F0"
-                    CornerRadius="3"
-                    Padding="5,2"
-                    IsVisible="{Binding IsUnsaved}">
-                <TextBlock Text="Unsaved Changes"
-                           Foreground="#CC3300"
-                           FontWeight="Medium"
-                           VerticalAlignment="Center" />
-            </Border>
+            <!-- Right Side - Stay on Top checkbox next to Exit Button -->
+            <CheckBox Grid.Column="2"
+                      Content="Stay on Top"
+                      IsChecked="{Binding StayOnTop}"
+                      VerticalAlignment="Center"
+                      Margin="0,0,10,0"/>
+
+            <!-- Exit Button -->
+            <Button Grid.Column="3"
+                    Content="Exit"
+                    Command="{Binding ExitCommand}"
+                    VerticalAlignment="Center" />
         </Grid>
     </Grid>
 </Window>
