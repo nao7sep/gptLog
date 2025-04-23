@@ -65,9 +65,11 @@ namespace gptLog.App.Model
                 Lines = SplitTextIntoLines(message.Text)
             }).ToList();
 
-            // Save to file
-            using var writeStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-            await JsonSerializer.SerializeAsync(writeStream, conversationDto, _options);
+            // Save to file with UTF-8 BOM
+            using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+            using var streamWriter = new StreamWriter(fileStream, new UTF8Encoding(true)); // true = include BOM
+            var jsonString = JsonSerializer.Serialize(conversationDto, _options);
+            await streamWriter.WriteAsync(jsonString);
         }
 
         /// <summary>

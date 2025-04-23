@@ -16,12 +16,6 @@
         <converters:RoleToBrushConverter x:Key="RoleToBrushConverter"/>
     </Window.Resources>
 
-    <Window.KeyBindings>
-        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCommand}" />
-        <KeyBinding Gesture="Ctrl+U" Command="{Binding MoveMessageUpCommand}" />
-        <KeyBinding Gesture="Ctrl+D" Command="{Binding MoveMessageDownCommand}" />
-        <KeyBinding Gesture="Delete" Command="{Binding DeleteMessageCommand}" />
-    </Window.KeyBindings>
 
     <Grid RowDefinitions="Auto,Auto,*,Auto">
         <!-- Top Menu Bar - Reorganized -->
@@ -33,16 +27,13 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Open/Close Button -->
+            <!-- Open Button (Only visible when no file is open) -->
             <Button Grid.Column="0" Content="Open" Command="{Binding OpenCommand}"
                     Margin="0,0,5,0" IsVisible="{Binding !HasOpenFile}" />
 
-            <Button Grid.Column="0" Content="Close File" Command="{Binding CloseFileCommand}"
-                    Margin="0,0,5,0" IsVisible="{Binding HasOpenFile}" />
-
             <!-- Save Button -->
             <Button Grid.Column="1" Content="Save" Command="{Binding SaveCommand}"
-                    Margin="0,0,5,0" />
+                    Margin="0,0,5,0" IsEnabled="{Binding IsUnsaved}" />
 
             <!-- Unsaved Indicator -->
             <Border Grid.Column="2"
@@ -62,7 +53,8 @@
                 <TextBlock Text="{Binding CurrentFilePath}"
                            IsVisible="{Binding HasOpenFile}"
                            TextWrapping="Wrap"
-                           MaxWidth="300" />
+                           MaxWidth="300"
+                           HorizontalAlignment="Left" />
 
                 <TextBlock Text="(No file open)"
                            Foreground="Gray"
@@ -73,7 +65,7 @@
         <!-- Conversation Title in Second Row -->
         <TextBox Grid.Row="1"
                  Text="{Binding ConversationTitle}"
-                 Watermark="Conversation Title"
+                 Watermark="Conversation"
                  FontSize="16"
                  FontWeight="Medium"
                  Margin="5"/>

@@ -10,13 +10,13 @@ namespace gptLog.App.Model
     public class ConversationMetadata
     {
         [JsonPropertyName("title")]
-        public string Title { get; set; } = "Conversation";
+        public string? Title { get; set; }
 
         [JsonPropertyName("created_at")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
 
         [JsonPropertyName("last_modified_at")]
-        public DateTime LastModifiedAt { get; set; } = DateTime.UtcNow;
+        public DateTime LastModifiedAt { get; set; }
     }
 
     /// <summary>

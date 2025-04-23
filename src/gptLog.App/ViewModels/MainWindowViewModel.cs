@@ -42,7 +42,6 @@ namespace gptLog.App.ViewModels
             DeleteMessageCommand = new RelayCommand(DeleteMessage, CanDeleteMessage);
             SaveCommand = new AsyncRelayCommand(SaveAsync);
             OpenCommand = new AsyncRelayCommand(OpenAsync);
-            CloseFileCommand = new RelayCommand(CloseFile, () => HasOpenFile);
             ExitCommand = new AsyncRelayCommand(ExitAsync);
 
             // These commands were updated to accept Message parameters
@@ -292,7 +291,7 @@ namespace gptLog.App.ViewModels
 
             // Show confirmation dialog with preview
             var title = $"Delete {message.Role} Message";
-            var confirmMessage = $"Are you sure you want to delete this {message.Role} message?\n\nPreview:\n{preview}";
+            var confirmMessage = $"Are you sure you want to delete this {message.Role} message?\n\n{message.Role}: {preview}";
             var shouldDelete = await ShowDialogAsync(title, confirmMessage, DialogType.YesNo);
 
             if (!shouldDelete)
@@ -384,7 +383,7 @@ namespace gptLog.App.ViewModels
                         Title = "Save gptLog File",
                         FileTypeChoices = new[] { fileTypes },
                         DefaultExtension = "json",
-                        SuggestedFileName = "conversation.json"
+                        SuggestedFileName = SuggestedFileName()
                     };
 
                     var file = await storageProvider.SaveFilePickerAsync(options);
@@ -527,6 +526,28 @@ namespace gptLog.App.ViewModels
             }
         }
 
+        // Helper method to generate suggested filename from title
+        private string SuggestedFileName()
+        {
+            if (string.IsNullOrWhiteSpace(ConversationTitle))
+                return "conversation.json";
+
+            // Convert to lowercase
+            var fileName = ConversationTitle.ToLowerInvariant();
+
+            // Replace all sequences of whitespace and symbols with a single hyphen
+            fileName = System.Text.RegularExpressions.Regex.Replace(fileName, @"[\s\W]+", "-");
+
+            // Trim any leading/trailing hyphens
+            fileName = fileName.Trim('-');
+
+            // If nothing remains after processing, fallback to default
+            if (string.IsNullOrEmpty(fileName))
+                return "conversation.json";
+
+            return fileName + ".json";
+        }
+
         private async Task<bool> ShowDialogAsync(string title, string message, DialogType dialogType = DialogType.Ok)
         {
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
@@ -537,15 +558,22 @@ namespace gptLog.App.ViewModels
                 var messageBox = new Window
                 {
                     Title = title,
-                    Width = 400,
-                    Height = 200,
+                    MinWidth = 300,
+                    MinHeight = 150,
+                    MaxWidth = 600,
+                    SizeToContent = SizeToContent.WidthAndHeight,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     Content = new StackPanel
                     {
                         Margin = new Thickness(20),
                         Children =
                         {
-                            new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap }
+                            new TextBlock
+                            {
+                                Text = message,
+                                TextWrapping = TextWrapping.Wrap,
+                                MaxWidth = 560
+                            }
                         }
                     }
                 };
