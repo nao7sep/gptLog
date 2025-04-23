@@ -14,6 +14,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using gptLog.App.Model;
+using Serilog;
 
 namespace gptLog.App.ViewModels
 {
@@ -151,7 +152,18 @@ namespace gptLog.App.ViewModels
         public ListBox? MessagesListBox
         {
             get => _messagesListBox;
-            set => _messagesListBox = value;
+            set
+            {
+                if (SetProperty(ref _messagesListBox, value))
+                {
+                    // When the ListBox is set, ensure it's correctly assigned
+                    // and scroll to the last message if there are any
+                    if (_messagesListBox != null && Messages.Count > 0)
+                    {
+                        ScrollToMessage();
+                    }
+                }
+            }
         }
 
         public IRelayCommand AddUserMessageCommand { get; }
@@ -214,7 +226,7 @@ namespace gptLog.App.ViewModels
             IsUnsaved = true;
 
             // Scroll to the newly added message
-            ScrollToLastMessage();
+            ScrollToMessage();
 
             if (ClearClipboardAfterPaste)
             {
@@ -404,12 +416,15 @@ namespace gptLog.App.ViewModels
 
             try
             {
+                Log.Information("Saving messages to file: {FilePath}", CurrentFilePath);
                 // Pass the conversation title to the save method
                 await JsonHelper.SaveMessagesToFileAsync(Messages, CurrentFilePath, ConversationTitle);
                 IsUnsaved = false;
+                Log.Information("Successfully saved {Count} messages", Messages.Count);
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Failed to save file: {FilePath}", CurrentFilePath);
                 await ShowErrorDialog("Save Error", $"Failed to save file: {ex.Message}");
             }
         }
@@ -418,6 +433,7 @@ namespace gptLog.App.ViewModels
         {
             try
             {
+                Log.Information("Loading messages from file: {FilePath}", filePath);
                 var (messages, title) = await JsonHelper.LoadMessagesFromFileAsync(filePath);
                 Messages.Clear();
                 foreach (var message in messages)
@@ -430,9 +446,11 @@ namespace gptLog.App.ViewModels
 
                 CurrentFilePath = filePath;
                 IsUnsaved = false;
+                Log.Information("Successfully loaded {Count} messages", messages.Count);
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Failed to load file: {FilePath}", filePath);
                 await ShowErrorDialog("Load Error", $"Failed to load file: {ex.Message}");
             }
         }
@@ -506,20 +524,25 @@ namespace gptLog.App.ViewModels
             }
         }
 
-        // Helper method to scroll to the last message
-        private void ScrollToLastMessage()
+        // Simplified scrolling helper method that handles all scrolling scenarios
+        private void ScrollToMessage(Message? message = null)
         {
-            if (_messagesListBox != null && Messages.Count > 0)
+            if (_messagesListBox == null || Messages.Count == 0)
             {
+                Log.Debug("Cannot scroll: MessagesListBox is null or Messages collection is empty");
+                return;
+            }
+
+            // If no specific message is provided, scroll to the last message
+            if (message == null)
+            {
+                Log.Debug("Scrolling to last message");
                 _messagesListBox.ScrollIntoView(Messages[Messages.Count - 1]);
             }
-        }
-
-        // Helper method to scroll to a specific message
-        private void ScrollToMessage(Message message)
-        {
-            if (_messagesListBox != null && message != null)
+            // Otherwise scroll to the specific message
+            else
             {
+                Log.Debug("Scrolling to specific message: {Role}: {Preview}", message.Role, message.PreviewText);
                 _messagesListBox.ScrollIntoView(message);
             }
         }

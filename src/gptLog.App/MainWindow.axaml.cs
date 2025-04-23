@@ -4,8 +4,10 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading; // Added for Dispatcher
 using gptLog.App.Model;
 using gptLog.App.ViewModels;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,11 +48,20 @@ namespace gptLog.App
                 // Set the MessagesListBox property in the ViewModel
                 this.AttachedToVisualTree += (s, e) =>
                 {
-                    var listBox = this.FindControl<ListBox>("MessagesList");
-                    if (listBox != null)
+                    // Use a small delay to ensure the visual tree is fully constructed
+                    Dispatcher.UIThread.Post(() =>
                     {
-                        vm.MessagesListBox = listBox;
-                    }
+                        var listBox = this.FindControl<ListBox>("MessagesList");
+                        if (listBox != null)
+                        {
+                            vm.MessagesListBox = listBox;
+                            Log.Debug("MessagesList found and assigned to ViewModel");
+                        }
+                        else
+                        {
+                            Log.Warning("MessagesList not found in the visual tree");
+                        }
+                    });
                 };
             }
         }
@@ -170,6 +181,29 @@ namespace gptLog.App
                     Close();
                 }
             }
+        }
+
+        // Method to manually refresh the ListBox reference
+        private void RefreshMessagesListBoxReference()
+        {
+            if (DataContext is MainWindowViewModel vm)
+            {
+                var listBox = this.FindControl<ListBox>("MessagesList");
+                if (listBox != null)
+                {
+                    // Set the reference in the ViewModel
+                    vm.MessagesListBox = listBox;
+                    Log.Debug("MessagesList manually refreshed");
+                }
+            }
+        }
+
+        protected override void OnOpened(EventArgs e)
+        {
+            base.OnOpened(e);
+
+            // Ensure the reference is set once the window is fully opened
+            Dispatcher.UIThread.Post(RefreshMessagesListBoxReference);
         }
     }
 }

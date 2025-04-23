@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using gptLog.App.ViewModels;
+using Serilog;
 using System;
 using System.IO;
 using System.Linq;
@@ -34,6 +35,8 @@ namespace gptLog.App
                     var filePath = args[1];
                     if (File.Exists(filePath) && filePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                     {
+                        Log.Information("Loading file from command line: {FilePath}", filePath);
+
                         // Load the file after the UI is initialized
                         desktop.Startup += async (sender, e) =>
                         {
