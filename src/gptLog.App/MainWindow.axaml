@@ -16,7 +16,6 @@
         <converters:RoleToBrushConverter x:Key="RoleToBrushConverter"/>
     </Window.Resources>
 
-
     <Grid RowDefinitions="Auto,Auto,*,Auto">
         <!-- Top Menu Bar - Reorganized -->
         <Grid Grid.Row="0" Margin="5">
