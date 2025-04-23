@@ -284,10 +284,8 @@ namespace gptLog.App.ViewModels
             var index = SelectedIndex;
             var message = Messages[index];
 
-            // Get a preview of the message (first 50 characters or less)
-            var preview = message.Text.Length > 50
-                ? message.Text.Substring(0, 50) + "..."
-                : message.Text;
+            // Get a preview of the message using our utility method
+            var preview = Message.TrimMessageText(message.Text);
 
             // Show confirmation dialog with preview
             var title = $"Delete {message.Role} Message";
@@ -558,8 +556,6 @@ namespace gptLog.App.ViewModels
                 var messageBox = new Window
                 {
                     Title = title,
-                    MinWidth = 300,
-                    MinHeight = 150,
                     MaxWidth = 600,
                     SizeToContent = SizeToContent.WidthAndHeight,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,

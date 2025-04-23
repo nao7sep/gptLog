@@ -9,17 +9,25 @@ namespace gptLog.App.Model
         public string Text { get; init; } = string.Empty;
 
         public string PreviewText =>
-            $"{(Role == Role.User ? "User" : "Assistant")}: {Trimmed}";
+            $"{(Role == Role.User ? "User" : "Assistant")}: {TrimMessageText(Text)}";
 
-        private string Trimmed
+        private string Trimmed => TrimMessageText(Text);
+
+        /// <summary>
+        /// Takes a message text, normalizes whitespace, trims it and adds ellipsis if it's longer than the specified length
+        /// </summary>
+        /// <param name="text">The text to trim</param>
+        /// <param name="maxLength">Maximum length (default: 50)</param>
+        /// <returns>Trimmed and formatted text</returns>
+        public static string TrimMessageText(string text, int maxLength = 50)
         {
-            get
-            {
-                var normalised = Regex.Replace(Text, @"\s+", " ").Trim();
-                return normalised.Length <= 50
-                    ? normalised
-                    : normalised[..50].TrimEnd() + "...";
-            }
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
+
+            var normalised = Regex.Replace(text, @"\s+", " ").Trim();
+            return normalised.Length <= maxLength
+                ? normalised
+                : normalised[..maxLength].TrimEnd() + "...";
         }
     }
 }
