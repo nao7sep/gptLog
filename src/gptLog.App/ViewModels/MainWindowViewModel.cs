@@ -328,6 +328,9 @@ namespace gptLog.App.ViewModels
             SelectedMessage = newMessage;
             IsUnsaved = true;
 
+            // Scroll to the newly inserted message
+            ScrollToMessage(newMessage);
+
             if (ClearClipboardAfterPaste)
             {
                 ClearClipboard();
@@ -353,6 +356,9 @@ namespace gptLog.App.ViewModels
             SelectedIndex = index;
             SelectedMessage = newMessage;
             IsUnsaved = true;
+
+            // Scroll to the newly inserted message
+            ScrollToMessage(newMessage);
 
             if (ClearClipboardAfterPaste)
             {
@@ -506,6 +512,15 @@ namespace gptLog.App.ViewModels
             if (_messagesListBox != null && Messages.Count > 0)
             {
                 _messagesListBox.ScrollIntoView(Messages[Messages.Count - 1]);
+            }
+        }
+
+        // Helper method to scroll to a specific message
+        private void ScrollToMessage(Message message)
+        {
+            if (_messagesListBox != null && message != null)
+            {
+                _messagesListBox.ScrollIntoView(message);
             }
         }
 
