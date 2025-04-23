@@ -189,7 +189,7 @@ namespace gptLog.App
 
                 if (ViewModel != null)
                 {
-                    await ViewModel.ShowErrorDialog("File Drop Error", "Could not process the dropped file. Please try again or use the Open button instead.");
+                    await ViewModel.ShowDialogAsync("File Drop Error", "Could not process the dropped file. Please try again or use the Open button instead.", MainWindowViewModel.DialogType.Ok);
                 }
             }
         }

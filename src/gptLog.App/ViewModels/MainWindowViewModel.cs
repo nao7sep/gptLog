@@ -595,7 +595,7 @@ namespace gptLog.App.ViewModels
             return fileName + ".json";
         }
 
-        private async Task<bool> ShowDialogAsync(string title, string message, DialogType dialogType = DialogType.Ok)
+        public async Task<bool> ShowDialogAsync(string title, string message, DialogType dialogType = DialogType.Ok)
         {
             if (string.IsNullOrEmpty(title))
                 title = "Information";
