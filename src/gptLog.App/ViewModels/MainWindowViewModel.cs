@@ -288,7 +288,7 @@ namespace gptLog.App.ViewModels
 
             // Show confirmation dialog with preview
             var title = $"Delete {message.Role} Message";
-            var confirmMessage = $"Are you sure you want to delete this {message.Role} message?\n\n{message.Role}: {preview}";
+            var confirmMessage = $"Are you sure you want to delete this message?\n\n{message.Role}: {preview}";
             var shouldDelete = await ShowDialogAsync(title, confirmMessage, DialogType.YesNo);
 
             if (!shouldDelete)
