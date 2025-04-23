@@ -68,142 +68,201 @@ namespace gptLog.App
 
         private void OnButtonClick(object? sender, RoutedEventArgs e)
         {
-            if (e.Source is Button button && button.Parent is Grid grid && grid.Parent is Border border)
+            try
             {
-                // Get the message from the DataContext of the Border
-                if (border.DataContext is Message message)
+                if (e.Source is Button button && button.Parent is Grid grid && grid.Parent is Border border)
                 {
-                    // Handle based on the button Tag
-                    switch (button.Tag as string)
+                    // Get the message from the DataContext of the Border
+                    if (border.DataContext is Message message)
                     {
-                        case "MoveUp":
-                            if (ViewModel != null)
-                            {
-                                // Select the message first
-                                ViewModel.SelectedMessage = message;
-                                ViewModel.MoveMessageUpCommand.Execute(null);
-                            }
-                            break;
+                        // Handle based on the button Tag
+                        switch (button.Tag as string)
+                        {
+                            case "MoveUp":
+                                if (ViewModel != null)
+                                {
+                                    // Select the message first
+                                    ViewModel.SelectedMessage = message;
+                                    ViewModel.MoveMessageUpCommand.Execute(null);
+                                }
+                                break;
 
-                        case "MoveDown":
-                            if (ViewModel != null)
-                            {
-                                // Select the message first
-                                ViewModel.SelectedMessage = message;
-                                ViewModel.MoveMessageDownCommand.Execute(null);
-                            }
-                            break;
+                            case "MoveDown":
+                                if (ViewModel != null)
+                                {
+                                    // Select the message first
+                                    ViewModel.SelectedMessage = message;
+                                    ViewModel.MoveMessageDownCommand.Execute(null);
+                                }
+                                break;
 
-                        case "InsertUser":
-                            ViewModel?.InsertUserMessageCommand.Execute(message);
-                            break;
+                            case "InsertUser":
+                                ViewModel?.InsertUserMessageCommand.Execute(message);
+                                break;
 
-                        case "InsertAssistant":
-                            ViewModel?.InsertAssistantMessageCommand.Execute(message);
-                            break;
+                            case "InsertAssistant":
+                                ViewModel?.InsertAssistantMessageCommand.Execute(message);
+                                break;
 
-                        case "Delete":
-                            if (ViewModel != null)
-                            {
-                                // Select the message first
-                                ViewModel.SelectedMessage = message;
-                                ViewModel.DeleteMessageCommand.Execute(null);
-                            }
-                            break;
+                            case "Delete":
+                                if (ViewModel != null)
+                                {
+                                    // Select the message first
+                                    ViewModel.SelectedMessage = message;
+                                    ViewModel.DeleteMessageCommand.Execute(null);
+                                }
+                                break;
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error handling button click event");
             }
         }
 
         private void DragOver(object? sender, DragEventArgs e)
         {
-            // Only accept drag if we don't have an open file
-            if (ViewModel != null && !ViewModel.HasOpenFile)
+            try
             {
-                // Only accept files
-                if (e.Data.Contains(DataFormats.FileNames))
+                // Only accept drag if we don't have an open file
+                if (ViewModel != null && !ViewModel.HasOpenFile)
                 {
-                    e.DragEffects = DragDropEffects.Copy;
+                    // Only accept files
+                    if (e.Data.Contains(DataFormats.FileNames))
+                    {
+                        e.DragEffects = DragDropEffects.Copy;
+                    }
+                    else
+                    {
+                        e.DragEffects = DragDropEffects.None;
+                    }
                 }
                 else
                 {
                     e.DragEffects = DragDropEffects.None;
                 }
-            }
-            else
-            {
-                e.DragEffects = DragDropEffects.None;
-            }
 
-            e.Handled = true;
+                e.Handled = true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error during drag over operation");
+                e.DragEffects = DragDropEffects.None;
+                e.Handled = true;
+            }
         }
 
         private async void Drop(object? sender, DragEventArgs e)
         {
-            // Only accept drop if we don't have an open file
-            if (ViewModel != null && !ViewModel.HasOpenFile)
+            try
             {
-                if (e.Data.Contains(DataFormats.FileNames))
+                // Only accept drop if we don't have an open file
+                if (ViewModel != null && !ViewModel.HasOpenFile)
                 {
-                    // Use the newer pattern to get data from drag drop
-                    var fileNames = e.Data.GetFiles()?.Select(f => f.Path.LocalPath);
-                    if (fileNames != null && fileNames.Any())
+                    if (e.Data.Contains(DataFormats.FileNames))
                     {
-                        var filePath = fileNames.First();
-                        if (filePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                        // Use the newer pattern to get data from drag drop
+                        var fileNames = e.Data.GetFiles()?.Select(f => f.Path.LocalPath);
+                        if (fileNames != null && fileNames.Any())
                         {
-                            await ViewModel.LoadAsync(filePath);
+                            var filePath = fileNames.First();
+                            if (filePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                            {
+                                await ViewModel.LoadAsync(filePath);
+                            }
+                            else
+                            {
+                                Log.Warning("User attempted to drop non-JSON file: {FilePath}", filePath);
+                            }
                         }
                     }
                 }
-            }
 
-            e.Handled = true;
+                e.Handled = true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error processing dropped file");
+                e.Handled = true;
+
+                if (ViewModel != null)
+                {
+                    await ViewModel.ShowErrorDialog("File Drop Error", "Could not process the dropped file. Please try again or use the Open button instead.");
+                }
+            }
         }
 
         private bool _isExitConfirmed = false;
 
         private async void MainWindow_Closing(object? sender, WindowClosingEventArgs e)
         {
-            // If exit is already confirmed, allow the window to close
-            if (_isExitConfirmed)
-                return;
-
-            // If there are unsaved changes, show confirmation dialog
-            if (ViewModel != null && ViewModel.IsUnsaved)
+            try
             {
-                e.Cancel = true;
-                var shouldExit = await ViewModel.ConfirmExitAsync();
+                // If exit is already confirmed, allow the window to close
+                if (_isExitConfirmed)
+                    return;
 
-                if (shouldExit)
+                // If there are unsaved changes, show confirmation dialog
+                if (ViewModel != null && ViewModel.IsUnsaved)
                 {
-                    _isExitConfirmed = true;
-                    Close();
+                    e.Cancel = true;
+                    var shouldExit = await ViewModel.ConfirmExitAsync();
+
+                    if (shouldExit)
+                    {
+                        _isExitConfirmed = true;
+                        Close();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error during window closing");
+                e.Cancel = true;
             }
         }
 
         // Method to manually refresh the ListBox reference
         private void RefreshMessagesListBoxReference()
         {
-            if (DataContext is MainWindowViewModel vm)
+            try
             {
-                var listBox = this.FindControl<ListBox>("MessagesList");
-                if (listBox != null)
+                if (DataContext is MainWindowViewModel vm)
                 {
-                    // Set the reference in the ViewModel
-                    vm.MessagesListBox = listBox;
-                    Log.Debug("MessagesList manually refreshed");
+                    var listBox = this.FindControl<ListBox>("MessagesList");
+                    if (listBox != null)
+                    {
+                        // Set the reference in the ViewModel
+                        vm.MessagesListBox = listBox;
+                        Log.Debug("MessagesList manually refreshed");
+                    }
+                    else
+                    {
+                        Log.Warning("Failed to find MessagesList control during refresh attempt");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error refreshing MessagesList reference");
             }
         }
 
         protected override void OnOpened(EventArgs e)
         {
-            base.OnOpened(e);
+            try
+            {
+                base.OnOpened(e);
 
-            // Ensure the reference is set once the window is fully opened
-            Dispatcher.UIThread.Post(RefreshMessagesListBoxReference);
+                // Ensure the reference is set once the window is fully opened
+                Dispatcher.UIThread.Post(RefreshMessagesListBoxReference);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error in OnOpened event");
+            }
         }
     }
 }

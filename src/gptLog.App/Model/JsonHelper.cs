@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace gptLog.App.Model
 {
@@ -22,6 +23,12 @@ namespace gptLog.App.Model
         /// </summary>
         public static async Task SaveMessagesToFileAsync(IEnumerable<Message> messages, string filePath, string title)
         {
+            if (string.IsNullOrEmpty(filePath))
+                throw new ArgumentException("File path cannot be null or empty", nameof(filePath));
+
+            if (messages == null)
+                throw new ArgumentNullException(nameof(messages));
+
             // Check if file exists to get existing metadata
             ConversationDto conversationDto;
             bool isNewFile = !File.Exists(filePath);
@@ -34,9 +41,21 @@ namespace gptLog.App.Model
                     conversationDto = await JsonSerializer.DeserializeAsync<ConversationDto>(readStream)
                         ?? new ConversationDto();
                 }
-                catch
+                catch (JsonException ex)
                 {
-                    // If there's an error reading the file, create a new DTO
+                    Log.Warning(ex, "Invalid JSON format in file: {FilePath}. Creating a new conversation.", filePath);
+                    conversationDto = new ConversationDto();
+                    isNewFile = true;
+                }
+                catch (IOException ex)
+                {
+                    Log.Error(ex, "Error reading file: {FilePath}", filePath);
+                    throw new IOException($"Could not read the file: {filePath}. The file might be in use by another application.", ex);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Unexpected error reading file: {FilePath}", filePath);
+                    // Create a new DTO if there's an error reading the file
                     conversationDto = new ConversationDto();
                     isNewFile = true;
                 }
@@ -59,17 +78,69 @@ namespace gptLog.App.Model
             }
 
             // Convert messages to DTOs
-            conversationDto.Messages = messages.Select(message => new MessageDto
+            try
             {
-                Role = message.Role.ToString().ToLowerInvariant(),
-                Lines = SplitTextIntoLines(message.Text)
-            }).ToList();
+                conversationDto.Messages = messages.Select(message => new MessageDto
+                {
+                    Role = message.Role.ToString().ToLowerInvariant(),
+                    Lines = SplitTextIntoLines(message.Text)
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error converting messages to DTO format");
+                throw new InvalidOperationException("Failed to prepare messages for saving.", ex);
+            }
 
             // Save to file with UTF-8 BOM
-            using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-            using var streamWriter = new StreamWriter(fileStream, new UTF8Encoding(true)); // true = include BOM
-            var jsonString = JsonSerializer.Serialize(conversationDto, _options);
-            await streamWriter.WriteAsync(jsonString);
+            try
+            {
+                // First save to a temporary file
+                string tempFilePath = filePath + ".temp";
+
+                using var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write);
+                using var streamWriter = new StreamWriter(fileStream, new UTF8Encoding(true)); // true = include BOM
+                var jsonString = JsonSerializer.Serialize(conversationDto, _options);
+                await streamWriter.WriteAsync(jsonString);
+                await streamWriter.FlushAsync();
+                streamWriter.Close();
+                fileStream.Close();
+
+                // If that succeeds, replace the original file safely
+                if (File.Exists(filePath))
+                {
+                    string backupPath = filePath + ".bak";
+                    // Keep a backup of the original file if it exists
+                    if (File.Exists(backupPath))
+                        File.Delete(backupPath);
+
+                    File.Move(filePath, backupPath);
+                }
+
+                File.Move(tempFilePath, filePath);
+
+                // Delete the backup only if everything succeeded
+                string backupPath2 = filePath + ".bak";
+                if (File.Exists(backupPath2))
+                    File.Delete(backupPath2);
+
+                Log.Debug("Successfully saved file: {FilePath}", filePath);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Log.Error(ex, "No permission to save file: {FilePath}", filePath);
+                throw new UnauthorizedAccessException($"You don't have permission to save to {filePath}. Try saving to a different location.", ex);
+            }
+            catch (IOException ex)
+            {
+                Log.Error(ex, "Error writing to file: {FilePath}", filePath);
+                throw new IOException($"Could not write to {filePath}. The file might be read-only or in use by another application.", ex);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Unexpected error saving file: {FilePath}", filePath);
+                throw new Exception($"Failed to save file: {ex.Message}", ex);
+            }
         }
 
         /// <summary>
@@ -78,40 +149,79 @@ namespace gptLog.App.Model
         /// <returns>A tuple containing the list of messages and the conversation title</returns>
         public static async Task<(List<Message> Messages, string? Title)> LoadMessagesFromFileAsync(string filePath)
         {
-            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            if (string.IsNullOrEmpty(filePath))
+                throw new ArgumentException("File path cannot be null or empty", nameof(filePath));
+
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException($"The file {filePath} does not exist.", filePath);
 
             try
             {
-                var conversationDto = await JsonSerializer.DeserializeAsync<ConversationDto>(stream);
-
-                if (conversationDto == null || conversationDto.Messages == null)
-                    return (new List<Message>(), null);
-
-                var messages = conversationDto.Messages.Select(dto => new Message
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                try
                 {
-                    Role = Enum.Parse<Role>(dto.Role, ignoreCase: true),
-                    Text = string.Join(Environment.NewLine, dto.Lines)
-                }).ToList();
+                    var conversationDto = await JsonSerializer.DeserializeAsync<ConversationDto>(stream);
 
-                // Return the title directly, which may be null
-                return (messages, conversationDto.Metadata.Title);
+                    if (conversationDto == null || conversationDto.Messages == null)
+                    {
+                        Log.Warning("File {FilePath} contained null content or messages", filePath);
+                        return (new List<Message>(), null);
+                    }
+
+                    var messages = conversationDto.Messages.Select(dto => new Message
+                    {
+                        Role = Enum.Parse<Role>(dto.Role, ignoreCase: true),
+                        Text = string.Join(Environment.NewLine, dto.Lines)
+                    }).ToList();
+
+                    // Return the title directly, which may be null
+                    return (messages, conversationDto.Metadata.Title);
+                }
+                catch (JsonException)
+                {
+                    // If main format fails, try legacy format
+                    stream.Position = 0;
+
+                    try
+                    {
+                        var legacyDtos = await JsonSerializer.DeserializeAsync<List<MessageDto>>(stream);
+
+                        if (legacyDtos == null)
+                        {
+                            Log.Warning("File {FilePath} appears to be in an invalid format", filePath);
+                            return (new List<Message>(), null);
+                        }
+
+                        var messages = legacyDtos.Select(dto => new Message
+                        {
+                            Role = Enum.Parse<Role>(dto.Role, ignoreCase: true),
+                            Text = string.Join(Environment.NewLine, dto.Lines)
+                        }).ToList();
+
+                        Log.Information("Loaded file {FilePath} using legacy format", filePath);
+                        return (messages, null);
+                    }
+                    catch (JsonException ex)
+                    {
+                        Log.Error(ex, "Invalid JSON format in file: {FilePath}", filePath);
+                        throw new FormatException($"The file {filePath} contains invalid JSON and cannot be loaded.", ex);
+                    }
+                }
             }
-            catch
+            catch (IOException ex)
             {
-                // Try to load legacy format (just an array of MessageDto)
-                stream.Position = 0;
-                var legacyDtos = await JsonSerializer.DeserializeAsync<List<MessageDto>>(stream);
-
-                if (legacyDtos == null)
-                    return (new List<Message>(), null);
-
-                var messages = legacyDtos.Select(dto => new Message
-                {
-                    Role = Enum.Parse<Role>(dto.Role, ignoreCase: true),
-                    Text = string.Join(Environment.NewLine, dto.Lines)
-                }).ToList();
-
-                return (messages, null);
+                Log.Error(ex, "Error accessing file: {FilePath}", filePath);
+                throw new IOException($"Could not access the file: {filePath}. It might be in use by another application.", ex);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Log.Error(ex, "No permission to access file: {FilePath}", filePath);
+                throw new UnauthorizedAccessException($"You don't have permission to open {filePath}.", ex);
+            }
+            catch (Exception ex) when (ex is not FormatException) // We want to let FormatException propagate
+            {
+                Log.Error(ex, "Unexpected error loading file: {FilePath}", filePath);
+                throw new Exception($"Failed to load file: {ex.Message}", ex);
             }
         }
 
@@ -120,6 +230,9 @@ namespace gptLog.App.Model
         /// </summary>
         private static List<string> SplitTextIntoLines(string text)
         {
+            if (text == null)
+                return new List<string>();
+
             var lines = new List<string>();
             using (var reader = new StringReader(text))
             {

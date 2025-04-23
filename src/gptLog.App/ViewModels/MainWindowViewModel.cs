@@ -195,9 +195,17 @@ namespace gptLog.App.ViewModels
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Ignore clipboard access errors
+                // Log clipboard access errors but don't disrupt the UI
+                Log.Warning(ex, "Error accessing clipboard");
+
+                // Temporarily pause clipboard checking if there's a persistent error
+                _clipboardTimer.Stop();
+
+                // Restart after a short delay to avoid error spam
+                await Task.Delay(2000);
+                _clipboardTimer.Start();
             }
         }
 
@@ -246,12 +254,22 @@ namespace gptLog.App.ViewModels
                     {
                         await clipboard.ClearAsync();
                         ClipboardText = string.Empty;
+                        Log.Debug("Clipboard cleared successfully");
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Ignore clipboard access errors
+                // Log but don't throw - clipboard clearing is non-critical
+                Log.Warning(ex, "Failed to clear clipboard");
+
+                // Try to set the clipboard text to empty string directly
+                try {
+                    ClipboardText = string.Empty;
+                }
+                catch (Exception innerEx) {
+                    Log.Error(innerEx, "Failed to reset clipboard text property");
+                }
             }
         }
 
@@ -295,28 +313,36 @@ namespace gptLog.App.ViewModels
             var index = SelectedIndex;
             var message = Messages[index];
 
-            // Get a preview of the message using our utility method
-            var preview = Message.TrimMessageText(message.Text);
-
-            // Show confirmation dialog with preview
-            var title = $"Delete {message.Role} Message";
-            var confirmMessage = $"Are you sure you want to delete this message?\n\n{message.Role}: {preview}";
-            var shouldDelete = await ShowDialogAsync(title, confirmMessage, DialogType.YesNo);
-
-            if (!shouldDelete)
-                return;
-
-            Messages.RemoveAt(index);
-            IsUnsaved = true;
-
-            // Adjust selection
-            if (Messages.Count > 0)
+            try
             {
-                SelectedIndex = Math.Min(index, Messages.Count - 1);
+                // Get a preview of the message using our utility method
+                var preview = Message.TrimMessageText(message.Text);
+
+                // Show confirmation dialog with preview
+                var title = $"Delete {message.Role} Message";
+                var confirmMessage = $"Are you sure you want to delete this message?\n\n{message.Role}: {preview}";
+                var shouldDelete = await ShowDialogAsync(title, confirmMessage, DialogType.YesNo);
+
+                if (!shouldDelete)
+                    return;
+
+                Messages.RemoveAt(index);
+                IsUnsaved = true;
+
+                // Adjust selection
+                if (Messages.Count > 0)
+                {
+                    SelectedIndex = Math.Min(index, Messages.Count - 1);
+                }
+                else
+                {
+                    SelectedIndex = -1;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                SelectedIndex = -1;
+                Log.Error(ex, "Error deleting message at index {Index}", index);
+                await ShowErrorDialog("Delete Error", "An error occurred while deleting the message.");
             }
         }
 
@@ -571,88 +597,147 @@ namespace gptLog.App.ViewModels
 
         private async Task<bool> ShowDialogAsync(string title, string message, DialogType dialogType = DialogType.Ok)
         {
-            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
-            {
-                var tcs = new TaskCompletionSource<bool>();
-                var result = false;
+            if (string.IsNullOrEmpty(title))
+                title = "Information";
 
-                var messageBox = new Window
+            if (string.IsNullOrEmpty(message))
+                message = "No additional information provided.";
+
+            try
+            {
+                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow != null)
                 {
-                    Title = title,
-                    MaxWidth = 600,
-                    SizeToContent = SizeToContent.WidthAndHeight,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    Content = new StackPanel
+                    var tcs = new TaskCompletionSource<bool>();
+
+                    try
                     {
-                        Margin = new Thickness(20),
-                        Children =
+                        var messageBox = new Window
                         {
-                            new TextBlock
+                            Title = title,
+                            MaxWidth = 600,
+                            SizeToContent = SizeToContent.WidthAndHeight,
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                            Content = new StackPanel
                             {
-                                Text = message,
-                                TextWrapping = TextWrapping.Wrap,
-                                MaxWidth = 560
+                                Margin = new Thickness(20),
+                                Children =
+                                {
+                                    new TextBlock
+                                    {
+                                        Text = message,
+                                        TextWrapping = TextWrapping.Wrap,
+                                        MaxWidth = 560
+                                    }
+                                }
+                            }
+                        };
+
+                        var stackPanel = (StackPanel)messageBox.Content;
+
+                        // Create button panel based on dialog type
+                        if (dialogType == DialogType.YesNo)
+                        {
+                            var buttonPanel = new StackPanel
+                            {
+                                Orientation = Orientation.Horizontal,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                Margin = new Thickness(0, 20, 0, 0),
+                                Spacing = 10,
+                                Children =
+                                {
+                                    new Button { Content = "Yes" },
+                                    new Button { Content = "No" }
+                                }
+                            };
+
+                            stackPanel.Children.Add(buttonPanel);
+
+                            var yesButton = buttonPanel.Children[0] as Button;
+                            var noButton = buttonPanel.Children[1] as Button;
+
+                            if (yesButton != null && noButton != null)
+                            {
+                                yesButton.Click += (s, e) =>
+                                {
+                                    try
+                                    {
+                                        tcs.SetResult(true);
+                                        messageBox.Close();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Error(ex, "Error handling Yes button click");
+                                        tcs.TrySetResult(false);
+                                    }
+                                };
+
+                                noButton.Click += (s, e) =>
+                                {
+                                    try
+                                    {
+                                        tcs.SetResult(false);
+                                        messageBox.Close();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.Error(ex, "Error handling No button click");
+                                        tcs.TrySetResult(false);
+                                    }
+                                };
+                            }
+                            else
+                            {
+                                Log.Warning("Failed to get references to dialog buttons");
                             }
                         }
-                    }
-                };
-
-                var stackPanel = (StackPanel)messageBox.Content;
-
-                // Create button panel based on dialog type
-                if (dialogType == DialogType.YesNo)
-                {
-                    var buttonPanel = new StackPanel
-                    {
-                        Orientation = Orientation.Horizontal,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        Margin = new Thickness(0, 20, 0, 0),
-                        Spacing = 10,
-                        Children =
+                        else // DialogType.Ok
                         {
-                            new Button { Content = "Yes" },
-                            new Button { Content = "No" }
+                            var button = new Button { Content = "OK", HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 20, 0, 0) };
+                            stackPanel.Children.Add(button);
+
+                            button.Click += (s, e) =>
+                            {
+                                try
+                                {
+                                    tcs.SetResult(true);
+                                    messageBox.Close();
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.Error(ex, "Error handling OK button click");
+                                    tcs.TrySetResult(true);
+                                }
+                            };
                         }
-                    };
 
-                    stackPanel.Children.Add(buttonPanel);
+                        // Handle window closing without button press
+                        messageBox.Closed += (s, e) =>
+                        {
+                            tcs.TrySetResult(false);
+                        };
 
-                    var yesButton = buttonPanel.Children[0] as Button;
-                    var noButton = buttonPanel.Children[1] as Button;
-
-                    if (yesButton != null && noButton != null)
+                        await messageBox.ShowDialog(desktop.MainWindow);
+                        return await tcs.Task;
+                    }
+                    catch (Exception ex)
                     {
-                        yesButton.Click += (s, e) =>
-                        {
-                            tcs.SetResult(true);
-                            messageBox.Close();
-                        };
-
-                        noButton.Click += (s, e) =>
-                        {
-                            tcs.SetResult(false);
-                            messageBox.Close();
-                        };
+                        Log.Error(ex, "Error showing dialog window: {Title}", title);
+                        tcs.TrySetResult(dialogType == DialogType.YesNo ? false : true);
+                        return await tcs.Task;
                     }
                 }
-                else // DialogType.Ok
+                else
                 {
-                    var button = new Button { Content = "OK", HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 20, 0, 0) };
-                    stackPanel.Children.Add(button);
-
-                    button.Click += (s, e) =>
-                    {
-                        tcs.SetResult(true);
-                        messageBox.Close();
-                    };
+                    Log.Warning("Could not show dialog - no main window available");
+                    return dialogType == DialogType.YesNo ? false : true; // Default to No for YesNo dialogs, Yes for Ok dialogs
                 }
-
-                await messageBox.ShowDialog(desktop.MainWindow);
-                result = await tcs.Task;
-                return result;
             }
-
-            return true; // Default to true if we can't show a dialog
+            catch (Exception ex)
+            {
+                // Ultimate fallback for any errors in the dialog system
+                Log.Error(ex, "Critical error in dialog system");
+                return dialogType == DialogType.YesNo ? false : true;
+            }
         }
 
         public enum DialogType
