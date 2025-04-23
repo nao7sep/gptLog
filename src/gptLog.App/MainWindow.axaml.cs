@@ -133,18 +133,13 @@ namespace gptLog.App
             {
                 if (e.Data.Contains(DataFormats.FileNames))
                 {
-                    // Use GetFileNames for now (even though it's deprecated)
-                    var files = e.Data.GetFileNames();
-                    if (files != null)
+                    // Use the non-deprecated GetDataByFormat instead of GetFileNames
+                    if (e.Data.GetDataByFormat(DataFormats.FileNames) is IEnumerable<string> files && files.Any())
                     {
-                        var filesList = files.ToList();
-                        if (filesList.Count > 0)
+                        var filePath = files.First();
+                        if (filePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                         {
-                            var filePath = filesList[0];
-                            if (filePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-                            {
-                                await ViewModel.LoadAsync(filePath);
-                            }
+                            await ViewModel.LoadAsync(filePath);
                         }
                     }
                 }

@@ -118,6 +118,10 @@
 
         <!-- Bottom Row with Add Buttons on Left and Exit on Right -->
         <Grid Grid.Row="3" Margin="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -125,8 +129,18 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
+            <!-- Clipboard Preview TextBox (Added) -->
+            <TextBox Grid.Row="0" Grid.ColumnSpan="4"
+                     Text="{Binding ClipboardText}"
+                     IsReadOnly="True"
+                     Height="60"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     Watermark="Clipboard contents will appear here"
+                     Margin="0,0,0,5"/>
+
             <!-- Left Side - Add Buttons -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="10">
                 <Button Content="Add as User" Command="{Binding AddUserMessageCommand}"
                         IsEnabled="{Binding CanAddClipboardText}"
                         ToolTip.Tip="Add as User message" Width="100" />
@@ -139,14 +153,14 @@
             </StackPanel>
 
             <!-- Right Side - Stay on Top checkbox next to Exit Button -->
-            <CheckBox Grid.Column="2"
+            <CheckBox Grid.Row="1" Grid.Column="2"
                       Content="Stay on Top"
                       IsChecked="{Binding StayOnTop}"
                       VerticalAlignment="Center"
                       Margin="0,0,10,0"/>
 
             <!-- Exit Button -->
-            <Button Grid.Column="3"
+            <Button Grid.Row="1" Grid.Column="3"
                     Content="Exit"
                     Command="{Binding ExitCommand}"
                     VerticalAlignment="Center" />
