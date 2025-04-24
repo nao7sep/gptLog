@@ -16,9 +16,9 @@
         <converters:RoleToBrushConverter x:Key="RoleToBrushConverter"/>
     </Window.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="5">
         <!-- Top Menu Bar - Reorganized -->
-        <Grid Grid.Row="0" Margin="5">
+        <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -28,18 +28,20 @@
 
             <!-- Open Button (Only visible when no file is open) -->
             <Button Grid.Column="0" Content="Open" Command="{Binding OpenCommand}"
-                    Margin="0,0,5,0" IsVisible="{Binding !HasOpenFile}" />
+                    Margin="5" IsVisible="{Binding !HasOpenFile}"
+                    VerticalAlignment="Center" />
 
             <!-- Save Button -->
             <Button Grid.Column="1" Content="Save" Command="{Binding SaveCommand}"
-                    Margin="0,0,5,0" IsEnabled="{Binding IsUnsaved}" />
+                    Margin="5" IsEnabled="{Binding IsUnsaved}"
+                    VerticalAlignment="Center" />
 
             <!-- Unsaved Indicator -->
             <Border Grid.Column="2"
                     Background="#FFF0F0"
                     CornerRadius="3"
-                    Padding="5,2"
-                    Margin="0,0,5,0"
+                    Padding="5,0"
+                    Margin="5"
                     IsVisible="{Binding IsUnsaved}">
                 <TextBlock Text="Unsaved Changes"
                            Foreground="#CC3300"
@@ -48,15 +50,17 @@
             </Border>
 
             <!-- File path display -->
-            <Grid Grid.Column="3" VerticalAlignment="Center" Margin="5,0">
+            <Grid Grid.Column="3" VerticalAlignment="Center" Margin="5">
                 <TextBlock Text="{Binding CurrentFilePath}"
                            IsVisible="{Binding HasOpenFile}"
                            TextWrapping="Wrap"
-                           HorizontalAlignment="Left" />
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center" />
 
                 <TextBlock Text="(No file open)"
                            Foreground="Gray"
-                           IsVisible="{Binding !HasOpenFile}" />
+                           IsVisible="{Binding !HasOpenFile}"
+                           VerticalAlignment="Center" />
             </Grid>
         </Grid>
 
@@ -64,7 +68,7 @@
         <TextBox Grid.Row="1"
                  Text="{Binding ConversationTitle}"
                  Watermark="Conversation"
-                 FontSize="16"
+                 FontSize="15"
                  FontWeight="Medium"
                  Margin="5"/>
 
@@ -76,31 +80,36 @@
                      Name="MessagesList">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Border BorderThickness="2" CornerRadius="4" Padding="4" Margin="2"
+                        <Border BorderThickness="1" CornerRadius="3" Padding="5,0" Margin="5"
                                 BorderBrush="{Binding Role, Converter={StaticResource RoleToBrushConverter}}">
                             <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto">
                                 <TextBlock Grid.Column="0" Text="{Binding PreviewText}" VerticalAlignment="Center" />
 
                                 <!-- Use Tags to identify buttons instead of commands -->
-                                <Button Grid.Column="1" Content="↑" Margin="2,0" Padding="4,2"
+                                <Button Grid.Column="1" Content="Up" Margin="5" Padding="5"
                                         Tag="MoveUp"
-                                        ToolTip.Tip="Move message up" />
+                                        ToolTip.Tip="Move message up"
+                                        VerticalAlignment="Center" />
 
-                                <Button Grid.Column="2" Content="↓" Margin="2,0" Padding="4,2"
+                                <Button Grid.Column="2" Content="Down" Margin="5" Padding="5"
                                         Tag="MoveDown"
-                                        ToolTip.Tip="Move message down" />
+                                        ToolTip.Tip="Move message down"
+                                        VerticalAlignment="Center" />
 
-                                <Button Grid.Column="3" Content="+U" Margin="2,0" Padding="4,2"
+                                <Button Grid.Column="3" Content="User" Margin="5" Padding="5"
                                         Tag="InsertUser"
-                                        ToolTip.Tip="Insert user message before this message" />
+                                        ToolTip.Tip="Insert user message before this message"
+                                        VerticalAlignment="Center" />
 
-                                <Button Grid.Column="4" Content="+A" Margin="2,0" Padding="4,2"
+                                <Button Grid.Column="4" Content="Assistant" Margin="5" Padding="5"
                                         Tag="InsertAssistant"
-                                        ToolTip.Tip="Insert assistant message before this message" />
+                                        ToolTip.Tip="Insert assistant message before this message"
+                                        VerticalAlignment="Center" />
 
-                                <Button Grid.Column="5" Content="×" Margin="2,0" Padding="4,2"
+                                <Button Grid.Column="5" Content="Delete" Margin="5" Padding="5"
                                         Tag="Delete"
-                                        ToolTip.Tip="Delete message" />
+                                        ToolTip.Tip="Delete message"
+                                        VerticalAlignment="Center" />
                             </Grid>
                         </Border>
                     </DataTemplate>
@@ -108,54 +117,51 @@
             </ListBox>
         </Border>
 
+        <!-- Clipboard Preview TextBox -->
+        <TextBox Grid.Row="3"
+                 Text="{Binding ClipboardText}"
+                 IsReadOnly="True"
+                 Height="100"
+                 AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 Watermark="Clipboard contents will appear here"
+                 Margin="5"
+                 Padding="5"/>
+
         <!-- Bottom Row with Add Buttons on Left and Exit on Right -->
-        <Grid Grid.Row="3" Margin="5">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <Grid Grid.Row="4" Margin="5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Clipboard Preview TextBox (Added) -->
-            <TextBox Grid.Row="0" Grid.ColumnSpan="4"
-                     Text="{Binding ClipboardText}"
-                     IsReadOnly="True"
-                     Height="60"
-                     AcceptsReturn="True"
-                     TextWrapping="Wrap"
-                     Watermark="Clipboard contents will appear here"
-                     Margin="0,0,0,5"/>
-
             <!-- Left Side - Add Buttons -->
-            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="10">
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
                 <Button Content="Add as User" Command="{Binding AddUserMessageCommand}"
                         IsEnabled="{Binding CanAddClipboardText}"
-                        ToolTip.Tip="Add as User message" Width="100" />
+                        ToolTip.Tip="Add as User message"
+                        VerticalAlignment="Center" />
                 <Button Content="Add as Assistant" Command="{Binding AddAssistantMessageCommand}"
                         IsEnabled="{Binding CanAddClipboardText}"
-                        ToolTip.Tip="Add as Assistant message" Width="120" />
+                        ToolTip.Tip="Add as Assistant message"
+                        VerticalAlignment="Center" />
                 <CheckBox Content="Clear clipboard after paste"
                           IsChecked="{Binding ClearClipboardAfterPaste}"
                           VerticalAlignment="Center"/>
             </StackPanel>
 
-            <!-- Right Side - Stay on Top checkbox next to Exit Button -->
-            <CheckBox Grid.Row="1" Grid.Column="2"
-                      Content="Stay on Top"
-                      IsChecked="{Binding StayOnTop}"
-                      VerticalAlignment="Center"
-                      Margin="0,0,10,0"/>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
+                <!-- Right Side - Stay on Top checkbox next to Exit Button -->
+                <CheckBox Content="Stay on Top"
+                          IsChecked="{Binding StayOnTop}"
+                          VerticalAlignment="Center" />
 
-            <!-- Exit Button -->
-            <Button Grid.Row="1" Grid.Column="3"
-                    Content="Exit"
-                    Command="{Binding ExitCommand}"
-                    VerticalAlignment="Center" />
+                <!-- Exit Button -->
+                <Button Content="Exit"
+                        Command="{Binding ExitCommand}"
+                        VerticalAlignment="Center" />
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>

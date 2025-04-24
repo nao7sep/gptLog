@@ -17,9 +17,9 @@ namespace gptLog.App.Model
         /// Takes a message text, normalizes whitespace, trims it and adds ellipsis if it's longer than the specified length
         /// </summary>
         /// <param name="text">The text to trim</param>
-        /// <param name="maxLength">Maximum length (default: 50)</param>
+        /// <param name="maxLength">Maximum length (default: 100)</param>
         /// <returns>Trimmed and formatted text</returns>
-        public static string TrimMessageText(string text, int maxLength = 50)
+        public static string TrimMessageText(string text, int maxLength = 100)
         {
             if (string.IsNullOrEmpty(text))
                 return string.Empty;
