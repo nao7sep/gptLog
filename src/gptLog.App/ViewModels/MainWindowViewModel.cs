@@ -56,6 +56,9 @@ namespace gptLog.App.ViewModels
             };
             _clipboardTimer.Tick += ClipboardTimer_Tick;
             _clipboardTimer.Start();
+
+            // Initialize the ConfiguredFontFamily property
+            ConfiguredFontFamily = new FontFamily(App.Settings?.FontFamily ?? FontDefaults.DefaultFontFamily);
         }
 
         public ObservableCollection<Message> Messages { get; }
@@ -632,6 +635,9 @@ namespace gptLog.App.ViewModels
                             }
                         };
 
+                        // Apply font settings using the App helper method
+                        App.ApplyFontSettingsToWindow(messageBox);
+
                         var stackPanel = (StackPanel)messageBox.Content;
 
                         // Create button panel based on dialog type
@@ -745,5 +751,14 @@ namespace gptLog.App.ViewModels
             Ok,
             YesNo
         }
+
+        // Property for configured font family from settings
+        public FontFamily ConfiguredFontFamily { get; }
+
+        // Property for configured font size from settings
+        public double ConfiguredFontSize => App.Settings?.FontSize ?? FontDefaults.DefaultFontSize;
+
+        // Property for title font size from settings
+        public int TitleFontSize => App.Settings?.TitleFontSize ?? FontDefaults.DefaultTitleFontSize;
     }
 }
