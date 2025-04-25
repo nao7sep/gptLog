@@ -616,7 +616,7 @@ namespace gptLog.App.ViewModels
             // Otherwise scroll to the specific message
             else
             {
-                Log.Debug("Scrolling to specific message: {Role}: {Preview}", message.Role, message.PreviewText);
+                Log.Debug("Scrolling to specific message");
                 _messagesListBox.ScrollIntoView(message);
             }
         }
