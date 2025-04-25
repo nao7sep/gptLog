@@ -10,7 +10,9 @@
         MaxWidth="600"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterOwner"
-        CanResize="False">
+        CanResize="False"
+        FontFamily="{Binding ConfiguredFontFamily}"
+        FontSize="{Binding ConfiguredFontSize}">
 
     <Grid Margin="5">
         <Grid.RowDefinitions>

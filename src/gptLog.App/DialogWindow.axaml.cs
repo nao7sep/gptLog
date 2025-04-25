@@ -23,8 +23,7 @@ namespace gptLog.App
                 viewModel.RequestClose += ViewModel_RequestClose;
             }
 
-            // Apply font settings from the App
-            App.ApplyFontSettingsToWindow(this);
+            // Font settings are now applied via data binding in XAML
         }
 
         private void ViewModel_RequestClose(object? sender, EventArgs e)

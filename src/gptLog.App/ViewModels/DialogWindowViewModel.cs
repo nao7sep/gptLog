@@ -24,6 +24,9 @@ namespace gptLog.App.ViewModels
             YesCommand = new RelayCommand(OnYesClicked);
             NoCommand = new RelayCommand(OnNoClicked);
             CloseCommand = new RelayCommand(OnCloseClicked);
+
+            // Initialize the ConfiguredFontFamily property
+            ConfiguredFontFamily = new Avalonia.Media.FontFamily(App.Settings?.FontFamily ?? Model.ApplicationDefaults.DefaultFontFamily);
         }
 
         public string Title
@@ -78,5 +81,11 @@ namespace gptLog.App.ViewModels
 
         // Event to request window closure
         public event EventHandler? RequestClose;
+
+        // Property for configured font family from settings
+        public Avalonia.Media.FontFamily ConfiguredFontFamily { get; }
+
+        // Property for configured font size from settings
+        public double ConfiguredFontSize => App.Settings?.FontSize ?? Model.ApplicationDefaults.DefaultFontSize;
     }
 }
