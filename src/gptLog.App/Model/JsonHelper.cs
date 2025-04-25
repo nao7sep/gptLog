@@ -226,7 +226,9 @@ namespace gptLog.App.Model
         }
 
         /// <summary>
-        /// Splits text into lines using StringReader instead of regex
+        /// Splits text into lines using StringReader instead of regex.
+        /// Omits whitespace-only lines at the beginning and end of the text,
+        /// but preserves whitespace-only lines in the middle.
         /// </summary>
         private static List<string> SplitTextIntoLines(string text)
         {
@@ -242,7 +244,31 @@ namespace gptLog.App.Model
                     lines.Add(line);
                 }
             }
-            return lines;
+
+            // If no lines, return empty list
+            if (lines.Count == 0)
+                return lines;
+
+            // Find first non-whitespace line
+            int firstVisibleIndex = 0;
+            while (firstVisibleIndex < lines.Count && string.IsNullOrWhiteSpace(lines[firstVisibleIndex]))
+            {
+                firstVisibleIndex++;
+            }
+
+            // If all lines are whitespace, return empty list
+            if (firstVisibleIndex >= lines.Count)
+                return new List<string>();
+
+            // Find last non-whitespace line
+            int lastVisibleIndex = lines.Count - 1;
+            while (lastVisibleIndex >= 0 && string.IsNullOrWhiteSpace(lines[lastVisibleIndex]))
+            {
+                lastVisibleIndex--;
+            }
+
+            // Return the range from first visible to last visible (inclusive)
+            return lines.GetRange(firstVisibleIndex, lastVisibleIndex - firstVisibleIndex + 1);
         }
     }
 }
