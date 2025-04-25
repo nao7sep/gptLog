@@ -18,7 +18,7 @@
         <converters:RoleToBrushConverter x:Key="RoleToBrushConverter"/>
     </Window.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Margin="5">
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto,Auto" Margin="5">
         <!-- Top Menu Bar - Reorganized -->
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
@@ -95,45 +95,47 @@
                     <DataTemplate>
                         <Border BorderThickness="1" CornerRadius="3" Padding="5" Margin="5"
                                 BorderBrush="{Binding Role, Converter={StaticResource RoleToBrushConverter}}">
-                            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto">
-                                <TextBlock Grid.Column="0" Text="{Binding PreviewText}" VerticalAlignment="Center" />
-
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
-                                    <!-- Removed explicit padding from buttons since we have default styles -->
-                                    <Button Content="Up"
-                                            Tag="MoveUp"
-                                            ToolTip.Tip="Move message up"
-                                            VerticalAlignment="Center" />
-
-                                    <Button Content="Down"
-                                            Tag="MoveDown"
-                                            ToolTip.Tip="Move message down"
-                                            VerticalAlignment="Center" />
-
-                                    <Button Content="+U"
-                                            Tag="InsertUser"
-                                            ToolTip.Tip="Insert user message before this message"
-                                            VerticalAlignment="Center" />
-
-                                    <Button Content="+A"
-                                            Tag="InsertAssistant"
-                                            ToolTip.Tip="Insert assistant message before this message"
-                                            VerticalAlignment="Center" />
-
-                                    <Button Content="Del"
-                                            Tag="Delete"
-                                            ToolTip.Tip="Delete message"
-                                            VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Grid>
+                            <TextBlock Text="{Binding PreviewText}" VerticalAlignment="Center" />
                         </Border>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
         </Border>
 
+        <!-- Message Operations Buttons -->
+        <Grid Grid.Row="3" Margin="5">
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                <Button Content="Move Up"
+                        Command="{Binding MoveMessageUpCommand}"
+                        IsEnabled="{Binding CanMoveMessageUp}"
+                        ToolTip.Tip="Move selected message up" />
+
+                <Button Content="Move Down"
+                        Command="{Binding MoveMessageDownCommand}"
+                        IsEnabled="{Binding CanMoveMessageDown}"
+                        ToolTip.Tip="Move selected message down" />
+
+                <Button Content="Insert User"
+                        Command="{Binding InsertUserMessageCommand}"
+                        CommandParameter="{Binding SelectedMessage}"
+                        IsEnabled="{Binding CanInsertMessage}"
+                        ToolTip.Tip="Insert user message before selected message" />
+
+                <Button Content="Insert Assistant"
+                        Command="{Binding InsertAssistantMessageCommand}"
+                        CommandParameter="{Binding SelectedMessage}"
+                        IsEnabled="{Binding CanInsertMessage}"
+                        ToolTip.Tip="Insert assistant message before selected message" />
+
+                <Button Content="Delete"
+                        Command="{Binding DeleteMessageCommand}"
+                        IsEnabled="{Binding CanDeleteMessage}"
+                        ToolTip.Tip="Delete selected message" />
+            </StackPanel>
+        </Grid>
+
         <!-- Clipboard Preview TextBox -->
-        <TextBox Grid.Row="3"
+        <TextBox Grid.Row="4"
                  Text="{Binding ClipboardText}"
                  IsReadOnly="True"
                  Height="100"
@@ -144,7 +146,7 @@
                  Padding="10"/>
 
         <!-- Bottom Row with Add Buttons on Left and Exit on Right -->
-        <Grid Grid.Row="4" Margin="5">
+        <Grid Grid.Row="5" Margin="5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>

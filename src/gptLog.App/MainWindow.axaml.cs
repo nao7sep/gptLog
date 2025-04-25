@@ -27,7 +27,6 @@ namespace gptLog.App
             DataContext = new MainWindowViewModel();
 
             Closing += MainWindow_Closing;
-            AddHandler(Button.ClickEvent, OnButtonClick);
 
             // Set up drag and drop for file opening
             AddHandler(DragDrop.DragOverEvent, DragOver);
@@ -65,62 +64,6 @@ namespace gptLog.App
                         }
                     });
                 };
-            }
-        }
-
-        private void OnButtonClick(object? sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (e.Source is Button button && button.Parent is Grid grid && grid.Parent is Border border)
-                {
-                    // Get the message from the DataContext of the Border
-                    if (border.DataContext is Message message)
-                    {
-                        // Handle based on the button Tag
-                        switch (button.Tag as string)
-                        {
-                            case "MoveUp":
-                                if (ViewModel != null)
-                                {
-                                    // Select the message first
-                                    ViewModel.SelectedMessage = message;
-                                    ViewModel.MoveMessageUpCommand.Execute(null);
-                                }
-                                break;
-
-                            case "MoveDown":
-                                if (ViewModel != null)
-                                {
-                                    // Select the message first
-                                    ViewModel.SelectedMessage = message;
-                                    ViewModel.MoveMessageDownCommand.Execute(null);
-                                }
-                                break;
-
-                            case "InsertUser":
-                                ViewModel?.InsertUserMessageCommand.Execute(message);
-                                break;
-
-                            case "InsertAssistant":
-                                ViewModel?.InsertAssistantMessageCommand.Execute(message);
-                                break;
-
-                            case "Delete":
-                                if (ViewModel != null)
-                                {
-                                    // Select the message first
-                                    ViewModel.SelectedMessage = message;
-                                    ViewModel.DeleteMessageCommand.Execute(null);
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error handling button click event");
             }
         }
 

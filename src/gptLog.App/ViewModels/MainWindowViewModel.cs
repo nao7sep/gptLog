@@ -35,14 +35,16 @@ namespace gptLog.App.ViewModels
         public MainWindowViewModel()
         {
             Messages = new ObservableCollection<Message>();
+            Messages.CollectionChanged += Messages_CollectionChanged;
             _dialogService = new DialogService();
 
             // Initialize commands
             AddUserMessageCommand = new RelayCommand(AddUserMessage, CanAddMessage);
             AddAssistantMessageCommand = new RelayCommand(AddAssistantMessage, CanAddMessage);
-            MoveMessageUpCommand = new RelayCommand(MoveMessageUp, CanMoveMessageUp);
-            MoveMessageDownCommand = new RelayCommand(MoveMessageDown, CanMoveMessageDown);
-            DeleteMessageCommand = new RelayCommand(DeleteMessage, CanDeleteMessage);
+            // Use lambda expressions that return the property values
+            MoveMessageUpCommand = new RelayCommand(MoveMessageUp, () => SelectedIndex > 0);
+            MoveMessageDownCommand = new RelayCommand(MoveMessageDown, () => SelectedIndex >= 0 && SelectedIndex < Messages.Count - 1);
+            DeleteMessageCommand = new RelayCommand(DeleteMessage, () => SelectedIndex >= 0);
             SaveCommand = new AsyncRelayCommand(SaveAsync);
             OpenCommand = new AsyncRelayCommand(OpenAsync);
             ExitCommand = new AsyncRelayCommand(ExitAsync);
@@ -72,12 +74,15 @@ namespace gptLog.App.ViewModels
             {
                 if (SetProperty(ref _clipboardText, value))
                 {
-                    // Notify that CanAddClipboardText may have changed
+                    // Notify that clipboard-related properties may have changed
                     OnPropertyChanged(nameof(CanAddClipboardText));
+                    OnPropertyChanged(nameof(CanInsertMessage));
 
                     // Also notify commands that they may need to reevaluate if they can execute
                     AddUserMessageCommand.NotifyCanExecuteChanged();
                     AddAssistantMessageCommand.NotifyCanExecuteChanged();
+                    InsertUserMessageCommand.NotifyCanExecuteChanged();
+                    InsertAssistantMessageCommand.NotifyCanExecuteChanged();
                 }
             }
         }
@@ -141,18 +146,56 @@ namespace gptLog.App.ViewModels
         public Message? SelectedMessage
         {
             get => _selectedMessage;
-            set => SetProperty(ref _selectedMessage, value);
+            set
+            {
+                if (SetProperty(ref _selectedMessage, value))
+                {
+                    // Notify that the can-execute properties may have changed
+                    OnPropertyChanged(nameof(CanMoveMessageUp));
+                    OnPropertyChanged(nameof(CanMoveMessageDown));
+                    OnPropertyChanged(nameof(CanDeleteMessage));
+                    OnPropertyChanged(nameof(CanInsertMessage));
+
+                    // Notify commands to reevaluate
+                    MoveMessageUpCommand.NotifyCanExecuteChanged();
+                    MoveMessageDownCommand.NotifyCanExecuteChanged();
+                    DeleteMessageCommand.NotifyCanExecuteChanged();
+                    InsertUserMessageCommand.NotifyCanExecuteChanged();
+                    InsertAssistantMessageCommand.NotifyCanExecuteChanged();
+                }
+            }
         }
 
         public int SelectedIndex
         {
             get => _selectedIndex;
-            set => SetProperty(ref _selectedIndex, value);
+            set
+            {
+                if (SetProperty(ref _selectedIndex, value))
+                {
+                    // Notify that the can-execute properties may have changed
+                    OnPropertyChanged(nameof(CanMoveMessageUp));
+                    OnPropertyChanged(nameof(CanMoveMessageDown));
+                    OnPropertyChanged(nameof(CanDeleteMessage));
+                }
+            }
         }
 
         public bool HasOpenFile => !string.IsNullOrEmpty(CurrentFilePath);
 
         public bool CanAddClipboardText => !string.IsNullOrWhiteSpace(ClipboardText);
+
+        // Can move up if there's a selected item and it's not the first item
+        public bool CanMoveMessageUp => SelectedIndex > 0;
+
+        // Can move down if there's a selected item and it's not the last item
+        public bool CanMoveMessageDown => SelectedIndex >= 0 && SelectedIndex < Messages.Count - 1;
+
+        // Can delete if there's a selected item
+        public bool CanDeleteMessage => SelectedIndex >= 0;
+
+        // Can insert if there's clipboard text and a selected item
+        public bool CanInsertMessage => SelectedIndex >= 0 && !string.IsNullOrWhiteSpace(ClipboardText);
 
         public ListBox? MessagesListBox
         {
@@ -238,6 +281,10 @@ namespace gptLog.App.ViewModels
             Messages.Add(message);
             IsUnsaved = true;
 
+            // Update selected index to the new message
+            SelectedIndex = Messages.Count - 1;
+            SelectedMessage = message;
+
             // Scroll to the newly added message
             ScrollToMessage();
 
@@ -278,11 +325,11 @@ namespace gptLog.App.ViewModels
             }
         }
 
-        private bool CanMoveMessageUp() => SelectedIndex > 0;
+        // Method removed as we're now using the public property directly
 
         private void MoveMessageUp()
         {
-            if (!CanMoveMessageUp())
+            if (!CanMoveMessageUp)
                 return;
 
             var index = SelectedIndex;
@@ -293,11 +340,11 @@ namespace gptLog.App.ViewModels
             IsUnsaved = true;
         }
 
-        private bool CanMoveMessageDown() => SelectedIndex >= 0 && SelectedIndex < Messages.Count - 1;
+        // Method removed as we're now using the public property directly
 
         private void MoveMessageDown()
         {
-            if (!CanMoveMessageDown())
+            if (!CanMoveMessageDown)
                 return;
 
             var index = SelectedIndex;
@@ -308,11 +355,11 @@ namespace gptLog.App.ViewModels
             IsUnsaved = true;
         }
 
-        private bool CanDeleteMessage() => SelectedIndex >= 0;
+        // Method removed as we're now using the public property directly
 
         private async void DeleteMessage()
         {
-            if (!CanDeleteMessage())
+            if (!CanDeleteMessage)
                 return;
 
             var index = SelectedIndex;
@@ -353,7 +400,7 @@ namespace gptLog.App.ViewModels
 
         private void InsertUserMessage(Message? message)
         {
-            if (message == null || string.IsNullOrWhiteSpace(ClipboardText))
+            if (!CanInsertMessage || message == null)
                 return;
 
             var index = Messages.IndexOf(message);
@@ -382,7 +429,7 @@ namespace gptLog.App.ViewModels
 
         private void InsertAssistantMessage(Message? message)
         {
-            if (message == null || string.IsNullOrWhiteSpace(ClipboardText))
+            if (!CanInsertMessage || message == null)
                 return;
 
             var index = Messages.IndexOf(message);
@@ -572,6 +619,23 @@ namespace gptLog.App.ViewModels
                 Log.Debug("Scrolling to specific message: {Role}: {Preview}", message.Role, message.PreviewText);
                 _messagesListBox.ScrollIntoView(message);
             }
+        }
+
+        // Helper method to update command states when collection changes
+        private void Messages_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            // Update command states when collection changes
+            OnPropertyChanged(nameof(CanMoveMessageUp));
+            OnPropertyChanged(nameof(CanMoveMessageDown));
+            OnPropertyChanged(nameof(CanDeleteMessage));
+            OnPropertyChanged(nameof(CanInsertMessage));
+
+            // Notify commands to reevaluate
+            MoveMessageUpCommand.NotifyCanExecuteChanged();
+            MoveMessageDownCommand.NotifyCanExecuteChanged();
+            DeleteMessageCommand.NotifyCanExecuteChanged();
+            InsertUserMessageCommand.NotifyCanExecuteChanged();
+            InsertAssistantMessageCommand.NotifyCanExecuteChanged();
         }
 
         // Helper method to generate suggested filename from title
