@@ -58,7 +58,7 @@ namespace gptLog.App.ViewModels
             _clipboardTimer.Start();
 
             // Initialize the ConfiguredFontFamily property
-            ConfiguredFontFamily = new FontFamily(App.Settings?.FontFamily ?? FontDefaults.DefaultFontFamily);
+            ConfiguredFontFamily = new FontFamily(App.Settings?.FontFamily ?? ApplicationDefaults.DefaultFontFamily);
         }
 
         public ObservableCollection<Message> Messages { get; }
@@ -756,9 +756,9 @@ namespace gptLog.App.ViewModels
         public FontFamily ConfiguredFontFamily { get; }
 
         // Property for configured font size from settings
-        public double ConfiguredFontSize => App.Settings?.FontSize ?? FontDefaults.DefaultFontSize;
+        public double ConfiguredFontSize => App.Settings?.FontSize ?? ApplicationDefaults.DefaultFontSize;
 
         // Property for title font size from settings
-        public int TitleFontSize => App.Settings?.TitleFontSize ?? FontDefaults.DefaultTitleFontSize;
+        public int TitleFontSize => App.Settings?.TitleFontSize ?? ApplicationDefaults.DefaultTitleFontSize;
     }
 }

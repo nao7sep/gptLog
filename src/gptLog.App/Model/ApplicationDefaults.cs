@@ -3,10 +3,11 @@
 namespace gptLog.App.Model
 {
     /// <summary>
-    /// Centralized place for font-related default values
+    /// Centralized place for application default values
     /// </summary>
-    public static class FontDefaults
+    public static class ApplicationDefaults
     {
+        // Font-related defaults
         public const string DefaultFontFamily = "Segoe UI";
         public const int DefaultFontSize = 12;
         public const int DefaultTitleFontSize = 15;

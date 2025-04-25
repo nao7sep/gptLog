@@ -34,14 +34,27 @@ namespace gptLog.App
             try
             {
                 var builder = new ConfigurationBuilder()
-                    .SetBasePath(AppContext.BaseDirectory)
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                    .SetBasePath(AppContext.BaseDirectory);
+
+                string appSettingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+                if (File.Exists(appSettingsPath))
+                {
+                    builder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                    Log.Information("Configuration loaded from appsettings.json");
+                }
+                else
+                {
+                    Log.Information("appsettings.json not found, using default settings");
+                }
 
                 Configuration = builder.Build();
 
                 // Load app settings from configuration
                 Settings = new AppSettings();
-                Configuration.GetSection("AppSettings").Bind(Settings);
+                if (Configuration != null)
+                {
+                    Configuration.GetSection("AppSettings").Bind(Settings);
+                }
 
                 Log.Information("Application settings loaded successfully");
             }
