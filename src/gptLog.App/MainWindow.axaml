@@ -99,28 +99,28 @@
                                 <TextBlock Grid.Column="0" Text="{Binding PreviewText}" VerticalAlignment="Center" />
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5">
-                                    <!-- Use Tags to identify buttons instead of commands -->
-                                    <Button Content="Up" Padding="5"
+                                    <!-- Removed explicit padding from buttons since we have default styles -->
+                                    <Button Content="Up"
                                             Tag="MoveUp"
                                             ToolTip.Tip="Move message up"
                                             VerticalAlignment="Center" />
 
-                                    <Button Content="Down" Padding="5"
+                                    <Button Content="Down"
                                             Tag="MoveDown"
                                             ToolTip.Tip="Move message down"
                                             VerticalAlignment="Center" />
 
-                                    <Button Content="+U" Padding="5"
+                                    <Button Content="+U"
                                             Tag="InsertUser"
                                             ToolTip.Tip="Insert user message before this message"
                                             VerticalAlignment="Center" />
 
-                                    <Button Content="+A" Padding="5"
+                                    <Button Content="+A"
                                             Tag="InsertAssistant"
                                             ToolTip.Tip="Insert assistant message before this message"
                                             VerticalAlignment="Center" />
 
-                                    <Button Content="Del" Padding="5"
+                                    <Button Content="Del"
                                             Tag="Delete"
                                             ToolTip.Tip="Delete message"
                                             VerticalAlignment="Center" />

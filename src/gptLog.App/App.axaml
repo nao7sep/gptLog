@@ -6,5 +6,6 @@
                   "Dark" or "Light" are other available options. -->
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="/Styles/DefaultStyles.axaml" />
     </Application.Styles>
 </Application>
