@@ -6,6 +6,17 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+
+        <!-- Project Metadata -->
+        <AssemblyTitle>gptLog</AssemblyTitle>
+        <Product>gptLog</Product>
+        <Description>A desktop application for logging and analyzing GPT conversations</Description>
+        <Company>Purrfect Code</Company>
+        <Authors>nao7sep</Authors>
+        <Copyright>Copyright © 2025</Copyright>
+        <Version>0.1</Version>
+        <PackageLicenseExpression>GPL-3.0</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/nao7sep/gptLog</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
