@@ -12,14 +12,7 @@
         WindowStartupLocation="CenterOwner"
         CanResize="False">
 
-    <Window.Styles>
-        <Style Selector="Button">
-            <Setter Property="Margin" Value="5"/>
-            <!-- Removed Padding setter to inherit from global style -->
-        </Style>
-    </Window.Styles>
-
-    <Grid Margin="20">
+    <Grid Margin="5">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -30,14 +23,12 @@
                    Text="{Binding Message}"
                    TextWrapping="Wrap"
                    MaxWidth="560"
-                   VerticalAlignment="Center"/>
+                   Margin="5" />
 
         <!-- Buttons -->
         <StackPanel Grid.Row="1"
-                    Orientation="Horizontal"
                     HorizontalAlignment="Center"
-                    Margin="0,20,0,0"
-                    Spacing="10">
+                    Margin="5">
 
             <!-- OK Button (visible for OK dialogs) -->
             <Button Content="OK"
