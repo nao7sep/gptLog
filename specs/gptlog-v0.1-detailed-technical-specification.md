@@ -68,19 +68,19 @@ public sealed class Message
 
 ```json
 [
-  {
-    "role": "user",
-    "lines": [
-      "Hello, how are you?",
-      ""
-    ]
-  },
-  {
-    "role": "assistant",
-    "lines": [
-      "I’m doing great—how can I help you?"
-    ]
-  }
+    {
+        "role": "user",
+        "lines": [
+            "Hello, how are you?",
+            ""
+        ]
+    },
+    {
+        "role": "assistant",
+        "lines": [
+            "I'm doing great—how can I help you?"
+        ]
+    }
 ]
 ```
 

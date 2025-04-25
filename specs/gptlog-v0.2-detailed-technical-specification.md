@@ -76,26 +76,26 @@ public sealed class Message
 
 ```json
 {
-  "metadata": {
-    "title": "Example Conversation",
-    "created_at": "2025-04-25T01:30:45Z",
-    "last_modified_at": "2025-04-25T02:15:30Z"
-  },
-  "messages": [
-    {
-      "role": "user",
-      "lines": [
-        "Hello, how are you?",
-        ""
-      ]
+    "metadata": {
+        "title": "Example Conversation",
+        "created_at": "2025-04-25T01:30:45Z",
+        "last_modified_at": "2025-04-25T02:15:30Z"
     },
-    {
-      "role": "assistant",
-      "lines": [
-        "I'm doing great—how can I help you?"
-      ]
-    }
-  ]
+    "messages": [
+        {
+            "role": "user",
+            "lines": [
+                "Hello, how are you?",
+                ""
+            ]
+        },
+        {
+            "role": "assistant",
+            "lines": [
+                "I'm doing great—how can I help you?"
+            ]
+        }
+    ]
 }
 ```
 
@@ -225,9 +225,9 @@ Application settings are stored in `appsettings.json` and include:
 
 ```json
 {
-  "FontFamily": "Segoe UI",
-  "FontSize": 12,
-  "TitleFontSize": 15
+    "FontFamily": "Segoe UI",
+    "FontSize": 12,
+    "TitleFontSize": 15
 }
 ```
 
