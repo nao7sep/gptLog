@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading; // Added for Dispatcher
 using gptLog.App.Model;
+using gptLog.App.Services;
 using gptLog.App.ViewModels;
 using Serilog;
 using System;
@@ -18,6 +19,7 @@ namespace gptLog.App
     public partial class MainWindow : Window
     {
         private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
+        private readonly DialogService _dialogService = new DialogService();
 
         public MainWindow()
         {
@@ -189,7 +191,7 @@ namespace gptLog.App
 
                 if (ViewModel != null)
                 {
-                    await ViewModel.ShowDialogAsync("File Drop Error", "Could not process the dropped file. Please try again or use the Open button instead.", MainWindowViewModel.DialogType.Ok);
+                    await _dialogService.ShowErrorDialogAsync("File Drop Error", "Could not process the dropped file. Please try again or use the Open button instead.");
                 }
             }
         }
