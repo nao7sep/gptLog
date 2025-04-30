@@ -83,8 +83,7 @@ public sealed class Message
         {
             "role": "user",
             "lines": [
-                "Hello, how are you?",
-                ""
+                "Hello, how are you?"
             ]
         },
         {
@@ -104,8 +103,9 @@ public sealed class Message
 * `messages` — Array of message objects
   * `role` — `"user"` | `"assistant"` (lower‑case string)
   * `lines` — array of **string lines**
-    * Empty lines appear as `""`
-    * Trailing newline in the source text **does not** create an extra empty element
+    * Empty lines in the middle of text appear as `""`
+    * Leading and trailing whitespace-only lines are automatically trimmed
+    * Empty messages (containing only whitespace) result in an empty lines array
 
 ### 4.3 Backward Compatibility
 
@@ -124,7 +124,9 @@ The application supports loading files in the legacy v0.1 format (where the root
 Serialization helpers:
 
 1. Split on newlines using StringReader when saving
-2. Normalise to OS newline on load (`Environment.NewLine`)
+2. Trim leading and trailing whitespace-only lines
+3. Preserve whitespace-only lines in the middle of content
+4. Normalise to OS newline on load (`Environment.NewLine`)
 
 ---
 
