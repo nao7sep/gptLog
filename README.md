@@ -14,11 +14,14 @@ gptLog is a narrow-scope desktop utility that helps a single user manually colle
 ## Features
 
 - Clipboard monitoring for easy message capture
-- Message organization with move up/down functionality
 - Support for both User and Assistant message types
-- Visual distinction between message types
-- Conversation metadata storage
+- Message organization with move up/down functionality
+- Visual distinction between message types (blue border for User, red border for Assistant)
+- Conversation metadata storage (title, creation date, modification date)
+- Custom dialog system for errors and confirmations
+- Configurable font settings
 - Keyboard shortcuts for common operations
+- Backward compatibility with legacy file formats
 - Cross-platform compatibility
 
 ## Tech Stack
@@ -45,8 +48,7 @@ gptLog saves conversations in a JSON format that preserves line-level fidelity a
         {
             "role": "user",
             "lines": [
-                "Hello, how are you?",
-                ""
+                "Hello, how are you?"
             ]
         },
         {
@@ -56,6 +58,48 @@ gptLog saves conversations in a JSON format that preserves line-level fidelity a
             ]
         }
     ]
+}
+```
+
+### File Format Details
+
+- **Metadata**
+  - `title` - Optional title for the conversation
+  - `created_at` - UTC timestamp of creation (ISO 8601)
+  - `last_modified_at` - UTC timestamp of last modification (ISO 8601)
+- **Messages**
+  - `role` - Either "user" or "assistant" (lowercase)
+  - `lines` - Array of string lines
+    - Empty lines in the middle of text appear as `""`
+    - Leading and trailing whitespace-only lines are automatically trimmed
+    - Empty messages (containing only whitespace) result in an empty lines array
+
+### File Operations
+
+- Files are saved with UTF-8 BOM encoding
+- Safe file saving with temporary files and backups
+- Filename suggestion based on conversation title (if available)
+- Backward compatibility with legacy v0.1 format
+
+## User Interface
+
+- Main window with title field, messages list, and clipboard preview
+- Clipboard panel for adding new messages from clipboard content
+- Message cards with controls for moving, inserting, and deleting messages
+- Visual distinction between User messages (blue border) and Assistant messages (red border)
+- Custom dialog system for errors and confirmations
+
+## Application Settings
+
+Application settings are stored in `appsettings.json` and include:
+
+```json
+{
+    "AppSettings": {
+        "FontFamily": "Segoe UI",
+        "FontSize": 12,
+        "TitleFontSize": 15
+    }
 }
 ```
 
