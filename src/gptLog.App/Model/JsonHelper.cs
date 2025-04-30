@@ -107,9 +107,10 @@ namespace gptLog.App.Model
                 fileStream.Close();
 
                 // If that succeeds, replace the original file safely
+                string backupPath = filePath + ".bak";
+
                 if (File.Exists(filePath))
                 {
-                    string backupPath = filePath + ".bak";
                     // Keep a backup of the original file if it exists
                     if (File.Exists(backupPath))
                         File.Delete(backupPath);
@@ -120,9 +121,8 @@ namespace gptLog.App.Model
                 File.Move(tempFilePath, filePath);
 
                 // Delete the backup only if everything succeeded
-                string backupPath2 = filePath + ".bak";
-                if (File.Exists(backupPath2))
-                    File.Delete(backupPath2);
+                if (File.Exists(backupPath))
+                    File.Delete(backupPath);
 
                 Log.Debug("Successfully saved file: {FilePath}", filePath);
             }

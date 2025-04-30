@@ -400,34 +400,15 @@ namespace gptLog.App.ViewModels
 
         private void InsertUserMessage(Message? message)
         {
-            if (!CanInsertMessage || message == null)
-                return;
-
-            var index = Messages.IndexOf(message);
-            if (index < 0)
-                return;
-
-            var newMessage = new Message
-            {
-                Role = Role.User,
-                Text = ClipboardText
-            };
-
-            Messages.Insert(index, newMessage);
-            SelectedIndex = index;
-            SelectedMessage = newMessage;
-            IsUnsaved = true;
-
-            // Scroll to the newly inserted message
-            ScrollToMessage(newMessage);
-
-            if (ClearClipboardAfterPaste)
-            {
-                ClearClipboard();
-            }
+            InsertMessage(message, Role.User);
         }
 
         private void InsertAssistantMessage(Message? message)
+        {
+            InsertMessage(message, Role.Assistant);
+        }
+
+        private void InsertMessage(Message? message, Role role)
         {
             if (!CanInsertMessage || message == null)
                 return;
@@ -438,7 +419,7 @@ namespace gptLog.App.ViewModels
 
             var newMessage = new Message
             {
-                Role = Role.Assistant,
+                Role = role,
                 Text = ClipboardText
             };
 

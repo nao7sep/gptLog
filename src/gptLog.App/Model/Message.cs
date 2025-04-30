@@ -11,8 +11,6 @@ namespace gptLog.App.Model
         public string PreviewText =>
             $"{(Role == Role.User ? "User" : "Assistant")}: {TrimMessageText(Text)}";
 
-        private string Trimmed => TrimMessageText(Text);
-
         /// <summary>
         /// Takes a message text, normalizes whitespace, trims it and adds ellipsis if it's longer than the specified length
         /// </summary>

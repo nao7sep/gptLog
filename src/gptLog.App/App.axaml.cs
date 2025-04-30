@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using gptLog.App.ViewModels;
 using gptLog.App.Model;
+using gptLog.App.Services;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using System;
@@ -96,28 +97,36 @@ namespace gptLog.App
                             await viewModel.LoadAsync(filePath);
                         };
                     }
+                    else
+                    {
+                        string errorMessage = string.Empty;
+
+                        if (!File.Exists(filePath))
+                        {
+                            errorMessage = $"File not found: {filePath}";
+                            Log.Warning("Command line file not found: {FilePath}", filePath);
+                        }
+                        else if (!filePath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                        {
+                            errorMessage = $"Not a JSON file: {filePath}";
+                            Log.Warning("Command line file is not a JSON file: {FilePath}", filePath);
+                        }
+
+                        // Show error dialog after UI is initialized
+                        if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            var dialogService = new DialogService();
+                            desktop.Startup += async (sender, e) =>
+                            {
+                                await Task.Delay(500); // Ensure UI is fully loaded
+                                await dialogService.ShowErrorDialogAsync("Command Line Error", errorMessage);
+                            };
+                        }
+                    }
                 }
             }
 
             base.OnFrameworkInitializationCompleted();
-        }
-
-        private void ApplyFontSettings(Avalonia.Controls.Window window)
-        {
-            try
-            {
-                // Apply font family and size from settings
-                if (Settings != null)
-                {
-                    window.FontFamily = new Avalonia.Media.FontFamily(Settings.FontFamily);
-                    window.FontSize = Settings.FontSize;
-                    Log.Information("Font settings applied to window successfully");
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error applying font settings");
-            }
         }
 
         /// <summary>
@@ -138,6 +147,13 @@ namespace gptLog.App
                     Log.Error(ex, "Error applying font settings to window {WindowTitle}", window.Title);
                 }
             }
+        }
+
+        // Private method that uses the static method
+        private void ApplyFontSettings(Window window)
+        {
+            ApplyFontSettingsToWindow(window);
+            Log.Information("Font settings applied to main window successfully");
         }
     }
 }
