@@ -168,13 +168,13 @@ Serialization helpers:
 
 ### 5.3 Message Card Controls
 
-| Control | Function | Shortcut |
-|---------|----------|----------|
-| **↑** | Move selected message **up** | `Ctrl+U` |
-| **↓** | Move selected message **down** | `Ctrl+D` |
-| **✚U** | Insert **User** message before this card | — |
-| **✚A** | Insert **Assistant** message before this card | — |
-| **🗑** | Delete this message | `Delete` |
+| Control | Function |
+|---------|----------|
+| **↑** | Move selected message **up** |
+| **↓** | Move selected message **down** |
+| **✚U** | Insert **User** message before this card |
+| **✚A** | Insert **Assistant** message before this card |
+| **🗑** | Delete this message |
 
 Inactive operations (e.g., moving the first card up) act as no‑op.
 
@@ -196,17 +196,17 @@ Inactive operations (e.g., moving the first card up) act as no‑op.
 
 ---
 
-## 6. Command & Shortcut Map
+## 6. Commands
 
-| Command | Key Gesture | Scope |
-|---------|-------------|-------|
-| Add clipboard as **User** | *(none)* | Clipboard panel |
-| Add clipboard as **Assistant** | *(none)* | Clipboard panel |
-| Move message up | `Ctrl+U` | ListBox |
-| Move message down | `Ctrl+D` | ListBox |
-| Delete message | `Delete` | ListBox |
-| Save file | `Ctrl+S` | Global |
-| Open file | `Ctrl+O` | Global |
+| Command | Scope |
+|---------|-------|
+| Open file | Global |
+| Save file | Global |
+| Add clipboard as **User** | Clipboard panel |
+| Add clipboard as **Assistant** | Clipboard panel |
+| Move message up | ListBox |
+| Move message down | ListBox |
+| Delete message | ListBox |
 
 ---
 
@@ -269,12 +269,14 @@ Dialogs are styled consistently with the main application and support the config
 
 ## 10. Future Extensions (non‑requirements)
 
-1. Drag‑and‑drop re‑ordering
-2. Search / filter
-3. Undo / redo stack
-4. Multi‑file session management
-5. Theme customization
-6. Export to other formats (Markdown, HTML)
+1. Keyboard shortcuts (Ctrl+S, Ctrl+O, Ctrl+U, Ctrl+D, Delete, etc.)
+2. Drag‑and‑drop file opening (opening files by dragging them to the application window)
+3. Drag‑and‑drop re‑ordering
+4. Search / filter
+5. Undo / redo stack
+6. Theme customization
+7. Export to other formats (Markdown, HTML)
+8. Multi‑file session management
 
 ---
 
