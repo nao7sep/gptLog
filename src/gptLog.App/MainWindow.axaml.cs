@@ -3,15 +3,15 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading; // Added for Dispatcher
-using gptLog.App.Model;
-using gptLog.App.Services;
-using gptLog.App.ViewModels;
+using gptLogApp.Model;
+using gptLogApp.Services;
+using gptLogApp.ViewModels;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace gptLog.App
+namespace gptLogApp
 {
     public partial class MainWindow : Window
     {

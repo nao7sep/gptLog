@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace gptLog.App.ViewModels
+namespace gptLogApp.ViewModels
 {
     public class ViewModelBase : ObservableObject
     {

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace gptLog.App.Model
+namespace gptLogApp.Model
 {
     /// <summary>
     /// Metadata for the conversation log

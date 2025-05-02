@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Serilog;
 
-namespace gptLog.App.Model
+namespace gptLogApp.Model
 {
     public static class JsonHelper
     {

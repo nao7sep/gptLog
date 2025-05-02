@@ -1,10 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using gptLog.App.ViewModels;
+using gptLogApp.ViewModels;
 using System;
 
-namespace gptLog.App
+namespace gptLogApp
 {
     public partial class DialogWindow : Window
     {

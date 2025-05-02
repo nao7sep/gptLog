@@ -1,10 +1,10 @@
 using Avalonia.Data.Converters;
 using Avalonia.Media;
-using gptLog.App.Model;
+using gptLogApp.Model;
 using System;
 using System.Globalization;
 
-namespace gptLog.App.Converters
+namespace gptLogApp.Converters
 {
     public class RoleToBrushConverter : IValueConverter
     {

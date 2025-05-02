@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using Serilog;
 
-namespace gptLog.App;
+namespace gptLogApp;
 
 class Program
 {

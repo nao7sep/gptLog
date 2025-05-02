@@ -1,12 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using gptLog.App.ViewModels;
+using gptLogApp.ViewModels;
 using Serilog;
 using System;
 using System.Threading.Tasks;
 
-namespace gptLog.App.Services
+namespace gptLogApp.Services
 {
     public class DialogService
     {

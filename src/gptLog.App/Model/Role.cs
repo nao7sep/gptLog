@@ -1,6 +1,6 @@
 using System;
 
-namespace gptLog.App.Model
+namespace gptLogApp.Model
 {
     public enum Role
     {

@@ -2,9 +2,9 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using gptLog.App.ViewModels;
-using gptLog.App.Model;
-using gptLog.App.Services;
+using gptLogApp.ViewModels;
+using gptLogApp.Model;
+using gptLogApp.Services;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using System;
@@ -12,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace gptLog.App
+namespace gptLogApp
 {
     public partial class App : Application
     {

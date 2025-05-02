@@ -12,11 +12,11 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using gptLog.App.Model;
-using gptLog.App.Services;
+using gptLogApp.Model;
+using gptLogApp.Services;
 using Serilog;
 
-namespace gptLog.App.ViewModels
+namespace gptLogApp.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {

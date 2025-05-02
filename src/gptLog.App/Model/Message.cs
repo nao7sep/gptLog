@@ -1,7 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace gptLog.App.Model
+namespace gptLogApp.Model
 {
     public sealed class Message
     {
