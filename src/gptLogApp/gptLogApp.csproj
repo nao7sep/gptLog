@@ -10,7 +10,7 @@
         <!-- Project Metadata -->
         <AssemblyTitle>gptLogApp</AssemblyTitle>
         <Product>gptLog</Product>
-        <Description></Description>
+        <Description>A desktop utility that helps users collect, organize, and save ChatGPT conversation snippets in a structured format.</Description>
         <Company>Purrfect Code</Company>
         <Authors>nao7sep</Authors>
         <Copyright>Copyright © 2025</Copyright>
