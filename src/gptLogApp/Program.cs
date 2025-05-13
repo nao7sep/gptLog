@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using Serilog;
+using Serilog.Events;
 
 namespace gptLogApp;
 
@@ -25,11 +26,16 @@ class Program
         string logFilePath = Path.Combine(logDirectory, "gptlog-.log");
 
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.Console()
-            .WriteTo.File(logFilePath,
+            .MinimumLevel.Verbose()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override("System", LogEventLevel.Warning)
+            .WriteTo.Console(
+                restrictedToMinimumLevel: LogEventLevel.Information)
+            .WriteTo.File(
+                path: logFilePath,
                 rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7)
+                restrictedToMinimumLevel: LogEventLevel.Verbose)
+            .Enrich.FromLogContext()
             .CreateLogger();
 
         try
