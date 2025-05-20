@@ -96,30 +96,25 @@
             <StackPanel HorizontalAlignment="Center">
                 <Button Content="Move Up"
                         Command="{Binding MoveMessageUpCommand}"
-                        IsEnabled="{Binding CanMoveMessageUp}"
-                        ToolTip.Tip="Move selected message up" />
+                        IsEnabled="{Binding CanMoveMessageUp}" />
 
                 <Button Content="Move Down"
                         Command="{Binding MoveMessageDownCommand}"
-                        IsEnabled="{Binding CanMoveMessageDown}"
-                        ToolTip.Tip="Move selected message down" />
+                        IsEnabled="{Binding CanMoveMessageDown}" />
 
                 <Button Content="Insert User"
                         Command="{Binding InsertUserMessageCommand}"
                         CommandParameter="{Binding SelectedMessage}"
-                        IsEnabled="{Binding CanInsertMessage}"
-                        ToolTip.Tip="Insert user message before selected message" />
+                        IsEnabled="{Binding CanInsertMessage}" />
 
                 <Button Content="Insert Assistant"
                         Command="{Binding InsertAssistantMessageCommand}"
                         CommandParameter="{Binding SelectedMessage}"
-                        IsEnabled="{Binding CanInsertMessage}"
-                        ToolTip.Tip="Insert assistant message before selected message" />
+                        IsEnabled="{Binding CanInsertMessage}" />
 
                 <Button Content="Delete"
                         Command="{Binding DeleteMessageCommand}"
-                        IsEnabled="{Binding CanDeleteMessage}"
-                        ToolTip.Tip="Delete selected message" />
+                        IsEnabled="{Binding CanDeleteMessage}" />
             </StackPanel>
         </Grid>
 
@@ -144,11 +139,9 @@
             <!-- Left Side - Add Buttons -->
             <StackPanel Grid.Column="0">
                 <Button Content="Add as User" Command="{Binding AddUserMessageCommand}"
-                        IsEnabled="{Binding CanAddClipboardText}"
-                        ToolTip.Tip="Add as User message" />
+                        IsEnabled="{Binding CanAddClipboardText}" />
                 <Button Content="Add as Assistant" Command="{Binding AddAssistantMessageCommand}"
-                        IsEnabled="{Binding CanAddClipboardText}"
-                        ToolTip.Tip="Add as Assistant message" />
+                        IsEnabled="{Binding CanAddClipboardText}" />
                 <CheckBox Content="Clear clipboard after paste"
                           IsChecked="{Binding ClearClipboardAfterPaste}" />
             </StackPanel>

@@ -15,7 +15,7 @@
         <Authors>nao7sep</Authors>
         <Copyright>Copyright © 2025</Copyright>
         <!-- Note: When updating version here, also update version in app.manifest -->
-        <Version>0.1</Version>
+        <Version>0.2</Version>
         <PackageLicenseExpression>GPL-3.0</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/nao7sep/gptLog</RepositoryUrl>
     </PropertyGroup>
